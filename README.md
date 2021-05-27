@@ -1,2 +1,2 @@
 # notionr
-R wrapper for Notion API (beta)
+R wrapper for the 🖋️ Notion 🖋️ [API](https://developers.notion.com/docs/getting-started) (still in beta).
