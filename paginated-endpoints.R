@@ -20,7 +20,7 @@ condense_list_users_content <- function(list.users.ls) {
 }
 
 # Helper function for all paginated Notion endpoints
-recurse_cursors <- function(endpoint, key, cursor = NULL) {
+recurse_cursors <- function(endpoint, key, cursor = NULL, pos.up.stack = 1) {
   url <- httr::modify_url(url = endpoint, 
                           query = list("start_cursor" = cursor))
   output <- httr::content(
@@ -33,9 +33,12 @@ recurse_cursors <- function(endpoint, key, cursor = NULL) {
     )
   )
   assign(x = "content_ls", 
-         value = append(get("content_ls", envir = parent.frame()), list(output)),
-         envir = parent.frame())
+         value = append(get("content_ls", 
+                            envir = parent.frame(n = pos.up.stack)), 
+                        list(output)),
+         envir = parent.frame(n = pos.up.stack))
   if (output$has_more) {
-    recurse_cursors(endpoint, key, output$next_cursor)
+    recurse_cursors(endpoint, key, output$next_cursor, pos.up.stack + 1)
   }
 }
+
