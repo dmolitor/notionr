@@ -1,5 +1,3 @@
-access_code <- cached_access_code()
-
 list_users <- function(key = cached_access_code()) {
   # Empty content list to content from each page
   content_ls <- list()

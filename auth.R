@@ -101,29 +101,6 @@ default_cache_dir <- function() {
   "~/.R/notionr/oauth/"
 }
 
-# clashing_notion_caches <- function(d) {
-#   if (cached_access_exists() == "both") {
-#     stop(paste0("You appear to already have multiple Notion access codes cached in the following directories:\n\t",
-#                    paste0(c(default_cache_dir(),
-#                             Sys.getenv("NOTIONR_CACHE")),
-#                           collapse = "\n\t"),
-#                    "\nTo avoid confusion, you should remove one of the listed files"),
-#          call. = FALSE)
-#   }
-#   if (cached_access_exists() == "default" && (d != default_cache_dir() && paste0(d, "/") != default_cache_dir())) {
-#     stop(paste0("You appear to already have a Notion access code cached in the following directory:\n\t",
-#                 default_cache_dir(),
-#                 "\nTo avoid confusion, you should remove this file before caching an access code in a new directory"),
-#          call. = FALSE)
-#   }
-#   if (cached_access_exists() == "environment" && (d != Sys.getenv("NOTIONR_CACHE") && paste0(d, "/") != Sys.getenv("NOTIONR_CACHE"))) {
-#     stop(paste0("You appear to already have a Notion access code cached in the following directory:\n\t",
-#                 Sys.getenv("NOTIONR_CACHE"),
-#                 "\nTo avoid confusion, you should remove this file before caching an access code in a new directory"),
-#          call. = FALSE)
-#   }
-# }
-
 cached_access_code <- function(path = NULL) {
   if (is.null(path) && cached_access_exists() == "none") {
     stop("No access code found. See notion_auth for details on setting access code",
@@ -170,6 +147,7 @@ current_workspace_name <- function(cache.dir, type = "refresh") {
   if (!type %in% c("refresh", "grab")) stop("type must be 'refresh' or 'grab'")
   workspace_names <- list.dirs(cache.dir, full.names = FALSE)
   workspace_names <- workspace_names[!workspace_names == ""]
+  if (identical(workspace_names, character(0))) stop("No workspaces found in specified cache directory", call. = FALSE)
   if (length(workspace_names) == 1) return(workspace_names)
   which_workspace <- menu(
     choices = workspace_names,
@@ -186,38 +164,33 @@ handle_same_workspace_name <- function(cache.dir, workspace.name) {
   return(refresh_or_nah)
 }
 
-notion_auth_configure <- function(cache.dir = default_cache_dir()) {
-  # # Check for clashing cached Notion access codes and warn/throw error
-  # clashing_notion_caches(d = cache.dir)
-  # # Check if access code already exists & needs refreshing
-  # needs_refresh <- cached_access_exists()
-  # if (needs_refresh %in% c("default", "environment")) {
-  #   choice <- menu(
-  #     choices = c("Yes, let's do it",
-  #                 "Nope, I don't need this"), 
-  #     title = paste0(
-  #       "It appears that you already have an access code cached at ",
-  #       ifelse(needs_refresh == "default", default_cache_dir(), Sys.getenv("NOTIONR_CACHE")),
-  #       ". Would you like to refresh anyways?"
-  #     )
-  #   )
-  #   if (!choice || choice == 2) return(invisible(NULL))
-  # }
-  # Proceed to obtaining & caching access code
-  stopifnot(is.character(cache.dir))
+notion_auth_configure <- function(return.key = FALSE, cache.dir = default_cache_dir()) {
+  stopifnot(return.key %in% c(TRUE, FALSE))
+  stopifnot(is.character(cache.dir) || is.null(cache.dir))
   notion_id <- app_id_secret()$oauth_client_id
   notion_secret <- app_id_secret()$oauth_client_secret
   access_code <- access_json(id = notion_id, secret = notion_secret)
-  cache_access_info(access = access_code, cache.dir = cache.dir)
+  if (!return.key) {
+    cache_access_info(access = access_code, cache.dir = cache.dir)
+  } else {
+    access_code <- jsonlite::fromJSON(access_code)$access_token
+    return(access_code)
+  }
 }
 
-notion_auth_refresh <- function(cache.dir = default_cache_dir()) {
+notion_auth_refresh <- function(return.key = FALSE, cache.dir = default_cache_dir()) {
+  stopifnot(return.key %in% c(TRUE, FALSE))
   stopifnot(is.character(cache.dir))
   workspace <- current_workspace_name(cache.dir = cache.dir, type = "refresh")
   notion_id <- app_id_secret()$oauth_client_id
   notion_secret <- app_id_secret()$oauth_client_secret
   access_code <- access_json(id = notion_id, secret = notion_secret)
-  cache_access_info(access = access_code, cache.dir = cache.dir, workspace.name = workspace)
+  if (!return.key) {
+    cache_access_info(access = access_code, cache.dir = cache.dir)
+  } else {
+    access_code <- jsonlite::fromJSON(access_code)$access_token
+    return(access_code)
+  }
 }
 
 nzchar <- function(x) {
