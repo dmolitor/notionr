@@ -112,6 +112,7 @@ cached_access_code <- function(path = NULL) {
       jsonlite::read_json(paste0(path, "/notionr_oauth_access.json"),
                           simplifyVector = TRUE)
     )
+    return(json_body$access_token)
   }
   if (cached_access_exists() == "both") {
     stop(paste0("You appear to already have multiple Notion access codes cached in the following directories:\n\t",
