@@ -103,7 +103,7 @@ default_cache_dir <- function() {
 
 cached_access_code <- function(path = NULL) {
   if (is.null(path) && cached_access_exists() == "none") {
-    stop("No access code found. See notion_auth for details on setting access code",
+    stop("No access code found. See notion_auth_configure for details on setting access code",
          call. = FALSE)
   }
   if (!is.null(path)) {
