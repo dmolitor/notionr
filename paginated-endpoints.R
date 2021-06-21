@@ -1,9 +1,3 @@
-# For testing -------------------------------------------------------------
-
-key <- cached_access_code()
-
-# Functions ---------------------------------------------------------------
-
 list_databases <- function(key = cached_access_code()) {
   stopifnot(is.character(key))
   # Empty content list to grab content from each page
@@ -131,10 +125,8 @@ query_database <- function(database.id, key, query.body = NULL) {
 
 # Helper function for GETting all paginated Notion endpoints
 recurse_cursors_pages <- function(database.id, key, query.body = NULL, cursor = NULL, pos.up.stack = 1) {
-  if (length(get("content_ls", 
-                 envir = parent.frame(n = pos.up.stack))) > 10) return(invisible(NULL))
   url <- paste0("https://api.notion.com/v1/databases/", database.id, "/query")
-  query.body <- if (!is.null(query.body)) {
+  body <- if (!is.null(query.body)) {
     append(query.body, list("start_cursor" = cursor))
   } else {
     list("start_cursor" = cursor)
@@ -143,7 +135,7 @@ recurse_cursors_pages <- function(database.id, key, query.body = NULL, cursor = 
     httr::stop_for_status(
       httr::POST(
         url = url,
-        body = query.body,
+        body = body,
         httr::add_headers("Authorization" = paste("Bearer", key),
                           "Notion-Version" = "2021-05-13"),
         encode = "json"
