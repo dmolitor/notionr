@@ -1,19 +1,3 @@
-list_databases <- function(key = cached_access_code()) {
-  stopifnot(is.character(key))
-  # Empty content list to grab content from each page
-  content_ls <- list()
-  recurse_cursors_get(endpoint = "https://api.notion.com/v1/databases", 
-                      key = key)
-  # Determine which elements are empty
-  empty_idx <- unlist(lapply(content_ls, function(i) identical(i$results, list())))
-  if (all(empty_idx)) {
-    warning("No databases found", call. = FALSE, immediate. = TRUE)
-    return(jsonlite::toJSON(content_ls[[1]], auto_unbox = TRUE))
-  }
-  content_ls <- content_ls[!empty_idx]
-  jsonlite::toJSON(content_ls, auto_unbox = TRUE)
-}
-
 list_database_ids <- function(key = cached_access_code()) {
   stopifnot(is.character(key))
   db_json <- list_databases(key)
@@ -155,45 +139,42 @@ recurse_cursors_pages <- function(database.id, key, query.body = NULL, cursor = 
 # Function to retrieve a database
 retrieve_database <- function(key, database.id) {
   url <- sprintf("https://api.notion.com/v1/databases/%s", database.id)
-  db_json <- jsonlite::minify(
-    httr::content(
-      httr::stop_for_status(
-        httr::GET(
-          url,
-          httr::add_headers("Authorization" = paste("Bearer", key),
-                            "Notion-Version" = "2021-05-13")
-        )
-      ),
-      as = "text"
+  db <- httr::content(
+    httr::stop_for_status(
+      httr::GET(
+        url,
+        httr::add_headers("Authorization" = paste("Bearer", key),
+                          "Notion-Version" = "2021-05-13")
+      )
     )
   )
-  db_out <- database(db_json)
+  db_out <- new_database(db)
   return(db_out)
 }
 
-# Create class for notion page object
-database <- function(x) {
-  stopifnot(jsonlite::validate(x))
-  x_ls <- jsonlite::fromJSON(x, simplifyDataFrame = FALSE)
-  if (
-    !all(
-      c("object", 
-        "id", 
-        "created_time",
-        "last_edited_time",
-        "title",
-        "properties") %in% names(x_ls)
-    )
-  ) {
-    stop("Object is not coercible to a database", call. = FALSE)
-  }
-  # Unnest title field
-  x_ls$title <- rich_text(x_ls$title[[1]])
-  x_ls$properties <- lapply(x_ls$properties, convert_properties_rich_text)
-  # Add database class
-  class(x_ls) <- "notion.database"
-  return(x_ls)
-}
+# # Create class for notion page object
+# database <- function(x) {
+#   stopifnot(is.list(x))
+#   x_ls <- jsonlite::fromJSON(x, simplifyDataFrame = FALSE)
+#   if (
+#     !all(
+#       c("object", 
+#         "id", 
+#         "created_time",
+#         "last_edited_time",
+#         "title",
+#         "properties") %in% names(x_ls)
+#     )
+#   ) {
+#     stop("Object is not coercible to a database", call. = FALSE)
+#   }
+#   # Unnest title field
+#   x_ls$title <- rich_text(x_ls$title[[1]])
+#   x_ls$properties <- lapply(x_ls$properties, convert_properties_rich_text)
+#   # Add database class
+#   class(x_ls) <- "notion.database"
+#   return(x_ls)
+# }
 
 # Create a class for notion page object
 
@@ -233,19 +214,6 @@ database_properties <- function(x) {
 
 valid_rich_text_types <- function() {
   c("text", "mention", "equation")
-}
-
-format.notion.database <- function(x, ..., start.with = "\r") {
-  unlist(
-    lapply(names(x), function(i) {
-      if (!is.list(x[[i]])) {
-        return(paste0(start.with, "", i, ": ", x[[i]], "\n"))
-      } else {
-        c(paste0(start.with, "", i, ":\n"),
-          unlist(format.notion.database(x[[i]], start.with = paste0(start.with, "    "))))
-      }
-    })
-  )
 }
 
 format.rich.text <- function(x, ...) {

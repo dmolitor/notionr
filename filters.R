@@ -42,7 +42,7 @@ new_filter <- function(x = list(), type = "text", property = "equals") {
       "number",
       "checkbox",
       "select",
-      "multi-select",
+      "multi_select",
       "date",
       "people",
       "files",
@@ -54,7 +54,7 @@ new_filter <- function(x = list(), type = "text", property = "equals") {
   if (type == "number") stopifnot(property %in% valid_number_properties())
   if (type == "checkbox") stopifnot(property %in% valid_checkbox_properties())
   if (type == "select") stopifnot(property %in% valid_select_properties())
-  if (type == "multi-select") stopifnot(property %in% valid_multiselect_properties())
+  if (type == "multi_select") stopifnot(property %in% valid_multiselect_properties())
   if (type == "date") stopifnot(property %in% valid_date_properties())
   if (type == "people") stopifnot(property %in% valid_people_properties())
   if (type == "files") stopifnot(property %in% valid_files_properties())
