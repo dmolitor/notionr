@@ -1,4 +1,6 @@
+# Create a low-level notion filter
 property_filter <- function(property, type, body) {
+  type <- reverse_code_types(type)
   body <- parse_formula(body)
   encode.as.character <- is.character(body$rhs)
   body <- replace_null(body)
@@ -13,6 +15,7 @@ property_filter <- function(property, type, body) {
   return(fltr_formatted)
 }
 
+# Create a low-level notion sort
 property_sort <- function(property, timestamp = "last_edited_time", direction = "descending") {
   if (length(unlist(property)) > 1) {
     stop("To combine many sorts, please use the 'compound_sort' function")
@@ -21,17 +24,18 @@ property_sort <- function(property, timestamp = "last_edited_time", direction = 
   format(srt)
 }
 
-r_notion_bool_convert <- function(x, source = "r") {
-  if (!source %in% c("r", "notion")) stop("Source must be either 'r' or 'notion'")
-  if (source == "notion") {
-    if (!x %in% c("true", "false")) stop("Not a Notion boolean value")
-    if (x == "true") return(TRUE)
-    return(FALSE)
-  }
-  if (!x %in% c(TRUE, FALSE) || is.na(x)) stop("Not an R boolean value")
-  if (x) return("true")
-  return("false")
-}
+
+# r_notion_bool_convert <- function(x, source = "r") {
+#   if (!source %in% c("r", "notion")) stop("Source must be either 'r' or 'notion'")
+#   if (source == "notion") {
+#     if (!x %in% c("true", "false")) stop("Not a Notion boolean value")
+#     if (x == "true") return(TRUE)
+#     return(FALSE)
+#   }
+#   if (!x %in% c(TRUE, FALSE) || is.na(x)) stop("Not an R boolean value")
+#   if (x) return("true")
+#   return("false")
+# }
 
 # Define constructor for text filter class
 new_filter <- function(x = list(), type = "text", property = "equals") {
@@ -249,12 +253,12 @@ coerce_formula <- function(x) {
               "formula" = form))
 }
 
-# Is something a notion boolean?
-is_notion_bool <- function(x) {
-  convert <- tryCatch(r_notion_bool_convert(x, source = "notion"),
-                      error = function(e) "no")
-  !inherits(convert, "character")
-}
+# # Is something a notion boolean?
+# is_notion_bool <- function(x) {
+#   convert <- tryCatch(r_notion_bool_convert(x, source = "notion"),
+#                       error = function(e) "no")
+#   !inherits(convert, "character")
+# }
 
 # Replace NULL with empty json body
 replace_null <- function(x) {
@@ -315,4 +319,25 @@ query_body <- function(filter = NULL, sorts = NULL) {
   }
   if (identical(body_ls, list())) body_ls <- NULL
   return(body_ls)
+}
+
+# Reverse code property types
+reverse_code_types <- function(type) {
+  real_type <- if (type %in% c("rich_text", "url", "email", "phone")) {
+    "text"
+  } else if (type %in% c("date", "created_time", "last_edited_time")) {
+    "date"
+  } else if (type %in% c("people", 
+                         "files", 
+                         "relation",
+                         "formula", 
+                         "number",
+                         "checkbox",
+                         "select",
+                         "multi_select")) {
+    type
+  } else {
+    stop("Invalid entry for 'type'")
+  }
+  return(real_type)
 }

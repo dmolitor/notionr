@@ -1,17 +1,17 @@
-list_database_ids <- function(key = cached_access_code()) {
-  stopifnot(is.character(key))
-  db_json <- list_databases(key)
-  stopifnot(jsonlite::validate(db_json))
-  dbs <- jsonlite::fromJSON(db_json, flatten = TRUE)
-  if (identical(dbs$results, list())) return(dplyr::tibble())
-  ## Function to extract relevant fields from nested dataframes
-  grab_fields <- function(x) {
-    stopifnot(all(c("id", "title") %in% names(x)))
-    dplyr::bind_cols("id" = x$id, "title" = x$title[[1]]$plain_text)
-  }
-  ##
-  dplyr::bind_rows(lapply(dbs$results, grab_fields))
-}
+# list_database_ids <- function(key = cached_access_code()) {
+#   stopifnot(is.character(key))
+#   db_json <- list_databases(key)
+#   stopifnot(jsonlite::validate(db_json))
+#   dbs <- jsonlite::fromJSON(db_json, flatten = TRUE)
+#   if (identical(dbs$results, list())) return(dplyr::tibble())
+#   ## Function to extract relevant fields from nested dataframes
+#   grab_fields <- function(x) {
+#     stopifnot(all(c("id", "title") %in% names(x)))
+#     dplyr::bind_cols("id" = x$id, "title" = x$title[[1]]$plain_text)
+#   }
+#   ##
+#   dplyr::bind_rows(lapply(dbs$results, grab_fields))
+# }
 
 list_users <- function(key = cached_access_code()) {
   stopifnot(is.character(key))
@@ -100,13 +100,6 @@ recurse_cursors_get <- function(endpoint, key, cursor = NULL, pos.up.stack = 1) 
   }
 }
 
-query_database <- function(database.id, key, query.body = NULL) {
-  # Empty content list
-  content_ls <- list()
-  recurse_cursors_pages(database.id, key, query.body)
-  return(content_ls)
-}
-
 # Helper function for GETting all paginated Notion endpoints
 recurse_cursors_pages <- function(database.id, key, query.body = NULL, cursor = NULL, pos.up.stack = 1) {
   url <- paste0("https://api.notion.com/v1/databases/", database.id, "/query")
@@ -134,22 +127,6 @@ recurse_cursors_pages <- function(database.id, key, query.body = NULL, cursor = 
   if (output$has_more) {
     recurse_cursors_pages(database.id, key, query.body, output$next_cursor, pos.up.stack + 1)
   }
-}
-
-# Function to retrieve a database
-retrieve_database <- function(key, database.id) {
-  url <- sprintf("https://api.notion.com/v1/databases/%s", database.id)
-  db <- httr::content(
-    httr::stop_for_status(
-      httr::GET(
-        url,
-        httr::add_headers("Authorization" = paste("Bearer", key),
-                          "Notion-Version" = "2021-05-13")
-      )
-    )
-  )
-  db_out <- new_database(db)
-  return(db_out)
 }
 
 # # Create class for notion page object
@@ -207,11 +184,6 @@ convert_properties_rich_text <- function(x) {
   return(x)
 }
 
-database_properties <- function(x) {
-  if (!inherits(x, "notion.database")) stop("Object is not a notion database", call. = FALSE)
-  return(x$properties)
-}
-
 valid_rich_text_types <- function() {
   c("text", "mention", "equation")
 }
@@ -228,10 +200,6 @@ format.rich.text <- function(x, ...) {
       )
     )
   }))
-}
-
-print.notion.database <- function(x, ...) {
-  cat(format(x))
 }
 
 print.rich.text <- function(x, ...) {
