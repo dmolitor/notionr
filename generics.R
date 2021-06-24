@@ -9,6 +9,6 @@ id <- function(x) {
 }
 
 # Create generic for extracting block children
-children <- function(x) {
+children <- function(x, recursive = TRUE) {
   UseMethod("children")
 }

@@ -14,7 +14,7 @@ new_database <- function(x) {
     stop("Object is missing essential database fields", call. = FALSE)
   }
   # Unnest database title
-  x$title <- x$title[[1]]
+  x$title <- unlist(x$title, recursive = FALSE)
   # Add database class
   class(x) <- "notionr_db"
   return(x)
@@ -28,16 +28,19 @@ summary.notionr_db <- function(x, ..., start.with = "\r") {
 
 # Method for printing database
 print.notionr_db <- function(x, ...) {
-  els <- c("Title" = x$title$plain_text,
-           "Id" = x$id,
-           "Created date" = as.character(as.Date(x$created_time)),
-           "Last edited date" = as.character(as.Date(x$last_edited_time)))
+  els <- c("Title" = replace_null_zchar(x$title$plain_text),
+           "Id" = replace_null_zchar(x$id),
+           "Created date" = replace_null_zchar(as.character(as.Date(x$created_time))),
+           "Last edited date" = replace_null_zchar(as.character(as.Date(x$last_edited_time))),
+           "Parent type" = replace_null_zchar(x$parent$type),
+           "Parent Id" = replace_null_zchar(x$parent[[2]]))
   cat(
     paste0(names(els), 
            ": ", 
            els,
            collapse = "\n\r")
   )
+  invisible(x)
 }
 
 # Method for formatting database information
@@ -80,13 +83,12 @@ list_databases <- function(key) {
   content_ls <- list()
   recurse_cursors_get(endpoint = "https://api.notion.com/v1/databases", 
                       key = key)
-  content_ls <- unlist(
+  unlist(
     lapply(content_ls, function(i) {
       lapply(i$results, new_database)
     }),
     recursive = FALSE
   )
-  return(content_ls)
 }
 
 # Function that returns all database IDs

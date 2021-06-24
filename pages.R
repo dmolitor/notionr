@@ -37,20 +37,19 @@ format.notionr_page <- function(x, ..., start.with = "\r") {
 
 # Method for printing database
 print.notionr_page <- function(x, ...) {
-  els <- c("Title" = ifelse(is.null(x$properties$Name$title$plain_text),
-                            "",
-                            x$properties$Name$title$plain_text),
-           "Id" = x$id,
-           "Created date" = as.character(as.Date(x$created_time)),
-           "Last edited date" = as.character(as.Date(x$last_edited_time)),
-           "Parent type" = x$parent$type,
-           "Parent Id" = x$parent[[2]])
+  els <- c("Title" = replace_null_zchar(x$properties$Name$title$plain_text),
+           "Id" = replace_null_zchar(x$id),
+           "Created date" = replace_null_zchar(as.character(as.Date(x$created_time))),
+           "Last edited date" = replace_null_zchar(as.character(as.Date(x$last_edited_time))),
+           "Parent type" = replace_null_zchar(x$parent$type),
+           "Parent Id" = replace_null_zchar(x$parent[[2]]))
   cat(
     paste0(names(els), 
            ": ", 
            els,
            collapse = "\n\r")
   )
+  invisible(x)
 }
 
 # Method for summarizing page
@@ -71,10 +70,14 @@ properties.notionr_page <- function(x) {
 }
 
 # Page method for generic 'children'
-children.notionr_page <- function(x) {
+children.notionr_page <- function(x, recursive = TRUE) {
+  stopifnot(recursive %in% c(TRUE, FALSE))
+  f <- ifelse(recursive, 
+              retrieve_block_children_recursive,
+              retrieve_block_children_nonrecursive)
   key <- attributes(x)$key
   page.id <- x$id
-  retrieve_block_children(key, page.id)
+  f(key, page.id)
 }
 
 # Database method for generic 'id'
@@ -87,9 +90,10 @@ id.notionr_page <- function(x) {
 
 # Queries database and returns list of pages based on the query body
 query_database <- function(database.id, key, query.body = NULL) {
+  url <- paste0("https://api.notion.com/v1/databases/", database.id, "/query")
   # Empty content list
   content_ls <- list()
-  recurse_cursors_pages(database.id, key, query.body)
+  recurse_cursors_post(url, key, query.body)
   content_ls <- unlist(
     lapply(content_ls, function(i) {
       lapply(i$results, new_page)
