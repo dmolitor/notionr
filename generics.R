@@ -12,3 +12,18 @@ id <- function(x) {
 children <- function(x, recursive = TRUE) {
   UseMethod("children")
 }
+
+# Create generic for object content
+object_content <- function(x) {
+  UseMethod("object_content")
+}
+
+# Default method for object content
+object_content.default <- function(x) {
+  NULL
+}
+
+# Create generic for title property
+title <- function(x, ...) {
+  UseMethod("title")
+}

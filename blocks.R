@@ -58,6 +58,8 @@ retrieve_block_children_recursive <- function(key, block.id) {
       recursive = FALSE
     )
   )
+  # If results are empty, return
+  if (identical(out, list())) return(out)
   which_have_children <- unlist(lapply(out, function(i) i$has_children))
   if (all(!which_have_children)) {
     return(out)

@@ -35,6 +35,10 @@ search <- function(key, query = NULL, sort = NULL, filter = NULL) {
     content_ls[which_are_pages],
     new_page
   )
+  # Assign key attribute
+  content_ls <- lapply(content_ls, function(i) {
+    `attr<-`(i, "key", key)
+  })
   return(content_ls)
 }
 

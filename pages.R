@@ -14,11 +14,9 @@ new_page <- function(x) {
   ) {
     stop("Object is missing essential page fields", call. = FALSE)
   }
-  # Unnest title page
-  x$properties$Name$title <- unlist(x$properties$Name$title, recursive = FALSE)
   # Add database class
   class(x) <- "notionr_page"
-  return(x)
+  classify_page_properties(x)
 }
 
 # Method for formatting page information
@@ -80,6 +78,13 @@ children.notionr_page <- function(x, recursive = TRUE) {
   f(key, page.id)
 }
 
+# Object content method for class page
+object_content.notionr_page <- function(x) {
+  lapply(x$properties, function(i) {
+    object_content(i[[i$type]])
+  })
+}
+
 # Database method for generic 'id'
 id.notionr_page <- function(x) {
   name <- ifelse(is.null(x$properties$Name$title$plain_text),
@@ -122,11 +127,21 @@ retrieve_page <- function(key, page.id) {
 }
 
 # List all pages in a database based on a query filter/sort
-list_page_ids <- function(database.id, key, query.body = NULL) {
-  dplyr::bind_rows(
-    lapply(
-      query_database(database.id, key, query.body),
-      id
-    )
+list_page_ids <- function(key, query = NULL, sort = NULL) {
+  pages <- search(key, query = query, sort = sort, filter = search_filter())
+  dplyr::tibble(
+    "id" = unlist(lapply(pages, function(i) i$id)),
+    "title" = unlist(lapply(pages, title))
   )
+}
+
+# Create title method for class notionr_page
+title.notionr_page <- function(x, all.titles = FALSE) {
+  title_property <- which(unlist(lapply(x$properties, function(i) i$type == "title")))
+  if (identical(title_property, integer(0))) return(NA)
+  title_node <- x$properties[[title_property]][[x$properties[[title_property]]$type]]
+  if (identical(unclass(title_node), list())) return(NA)
+  titles <- unlist(lapply(title_node, function(i) i$plain_text), recursive = FALSE)
+  if (all.titles) return(titles)
+  titles[[1]]
 }
