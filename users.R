@@ -1,6 +1,11 @@
 # Constructor for User class
 new_user <- function(x) {
-  
+  stopifnot(is.list(x))
+  if (!all(c("object", "id", "type", "name", "avatar_url") %in% names(x))) {
+    stop("Missing essential user fields", call. = FALSE)
+  }
+  class(x) <- "notionr_user"
+  x
 }
 
 # Acces list users endpoint
@@ -10,7 +15,12 @@ list_users <- function(key) {
   content_ls <- list()
   recurse_cursors_get(endpoint = "https://api.notion.com/v1/users", 
                       key = key)
-  content_ls <- unlist(content_ls, recursive = FALSE)
+  content_ls <- unlist(
+    lapply(content_ls, function(i) {
+      i$results
+    }),
+    recursive = FALSE
+  )
   condense_list_users_content(content_ls)
 }
 
