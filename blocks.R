@@ -15,6 +15,9 @@ new_block <- function(x) {
   }
   # Add block class
   class(x) <- "notionr_block"
+  if (!x$type %in% c("title", "unsupported")) {
+    x[[x$type]]$text <- new_rich_text_array(x[[x$type]]$text)
+  }
   return(x)
 }
 
@@ -119,4 +122,22 @@ children.notionr_block <- function(x, recursive = TRUE) {
   key <- attributes(x)$key
   block.id <- x$id
   f(key, block.id)
+}
+
+# Does a block have children?
+has_children <- function(x) {
+  if (!(inherits(x, "notionr_page") || inherits(x, "notionr_block"))) {
+    stop("Object must be of class `notionr_page` or `notionr_block`", call. = FALSE)
+  }
+  children_query <- children(x, recursive = FALSE)
+  !identical(children_query, list())
+}
+
+# Object content method for block
+object_content.notionr_block <- function(x) {
+  x <- unclass(x)
+  if (!(x$type %in% c("title", "unsupported"))) {
+    x[[x$type]]$text <- object_content(x[[x$type]]$text)
+  }
+  x[[x$type]]
 }
