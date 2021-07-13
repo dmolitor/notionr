@@ -1,4 +1,4 @@
-# Constructor for notion page class
+# Constructor for notion block class
 new_block <- function(x) {
   stopifnot(is.list(x))
   if (
@@ -18,7 +18,9 @@ new_block <- function(x) {
   return(x)
 }
 
-# Function to retrieve first layer block children
+# Block children
+#
+# Retrieves block children non-recursively. Aka only the first layer of children
 retrieve_block_children_nonrecursive <- function(key, block.id) {
   stopifnot(is.character(key), is.character(block.id))
   url <- sprintf("https://api.notion.com/v1/blocks/%s/children", block.id)
@@ -39,7 +41,9 @@ retrieve_block_children_nonrecursive <- function(key, block.id) {
   )
 }
 
-# Function to retrieve all block children recursively
+# Block children
+#
+# Retrieves block children recursively. All block children.
 retrieve_block_children_recursive <- function(key, block.id) {
   stopifnot(is.character(key), is.character(block.id))
   url <- sprintf("https://api.notion.com/v1/blocks/%s/children", block.id)
@@ -88,7 +92,14 @@ format.notionr_block <- function(x, ..., start.with = "\r") {
   )
 }
 
-# Method for printing database
+#' Print block information
+#' 
+#' Prints high-level information about a block object
+#' 
+#' @param x An object of class `notionr_block`.
+#' @param ... Used to swallow additional arguments.
+#' @return Invisibly returns itself. Primarily called for side effects.
+#' @export
 print.notionr_block <- function(x, ...) {
   els <- c("Id" = x$id,
            "Type" = x$type,
@@ -104,15 +115,34 @@ print.notionr_block <- function(x, ...) {
   invisible(x)
 }
 
-# Method for summarizing page
-summary.notionr_block <- function(x, ..., start.with = "\r") {
-  formatted_page <- format(x)
-  cat(formatted_page)
+#' Print detailed block information
+#' 
+#' Prints low-level information about a block object
+#' 
+#' @param x An object of class `notionr_block`.
+#' @param ... Used to swallow additional arguments.
+#' @param start.with Which character to preface each line in 
+#'   the tree structure with.
+#' @return Invisibly returns itself. Primarily called for side effects.
+#' @export
+details.notionr_block <- function(x, ..., start.with = "\r") {
+  formatted_block <- format(x)
+  cat(formatted_block)
+  invisible(x)
 }
 
-# Block method for 'children'
+#' Retrieve block children
+#' 
+#' Retrieves first level of block children or recursively retrieves all block
+#' children.
+#' 
+#' @param x An object of class `notionr_block`.
+#' @param recursive A logical scalar. Should it return the first level
+#'   of block children or recursively return all block children.
+#' @return A list of `notionr_block` objects.
+#' @export
 children.notionr_block <- function(x, recursive = TRUE) {
-  stopifnot(recursive %in% c(TRUE, FALSE))
+  stopifnot(inherits(x, "notionr_block"), recursive %in% c(TRUE, FALSE))
   f <- ifelse(recursive, 
               retrieve_block_children_recursive,
               retrieve_block_children_nonrecursive)
