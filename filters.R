@@ -1,7 +1,75 @@
-# Encode character values
-encode_character <- function(x) {
-  stopifnot(is.character(x))
-  paste0("'", x, "'")
+# Compound and function
+and <- function(x, y) {
+  stopifnot(is.list(x), is.list(y))
+  list("and" = list(x, y))
+}
+
+#' Compound database filter
+#' 
+#' The `compound_filter` function combines two filters into a compound one. These
+#' filters can either be compound filters themselves, or single-level filters as
+#' described in \code{\link{property_filter}}. This filter is only meant for use
+#' within the \code{\link{query_database}} function.
+#' 
+#' Compound filters can be nested up to 2 levels deep. Currently there is no 
+#' checking for this, so it's on the user to adhere to it.
+#' 
+#' @param x A property filter; either compound or single-level.
+#' @param y A property filter; either compound or single-level.
+#' @param type A string indicating what type of compound filter. Must be either 
+#'   `and` or `or`.
+#' @examples 
+#' compound_filter(
+#'   x = property_filter(
+#'     property = "Landmark",
+#'     type = "text",
+#'     body = contains ~ Bridge
+#'   ),
+#'   y = property_filter(
+#'     property = "Bodies of Water",
+#'     type = "checkbox",
+#'     body = equals ~ TRUE
+#'   ),
+#'   type = "and"
+#' )
+#' @return A structured compound filter.
+#' @export
+compound_filter <- function(x, y, type = "and") {
+  if (!type %in% c("and", "or")) stop("Only supports type 'and' or 'or'", call. = FALSE)
+  if (type == "and") return(and(x, y))
+  or(x, y)
+}
+
+#' Compound database sort
+#' 
+#' The `compound_sort` function combines a list of sorts into a compound one.
+#' Each element in this list should be an output of \code{\link{property_sort}}.
+#' This function is only meant for use 
+#' within the \code{\link{query_database}} function.
+#' 
+#' @param ... A list of property sorts.
+#' @examples 
+#' compound_sort(
+#'   property_sort(
+#'     property = "Ingredients",
+#'     timestamp = "last_edited_time",
+#'     direction = "descending"
+#'   ),
+#'   property_sort(
+#'     property = "Travel Destinations",
+#'     timestamp = "created_time",
+#'     direction = "ascending"
+#'   )
+#' )
+#' @return An object of class `notionr_compund_sort`.
+#' @export
+compound_sort <- function(...) {
+  x <- list(...)
+  if (!all(unlist(lapply(x, is.list)))) {
+    stop("Each object must be a list returned by the 'property_sort' function")
+  }
+  class(x) <- c("list", "notionr_compound_sort")
+  return(x)
 }
 
 # Creating a method for formatting objects with class notionr_filter
@@ -86,6 +154,12 @@ new_sort <- function(x = list(), timestamp = "last_edited_time", direction = "de
             direction = direction)
 }
 
+# Compound or function
+or <- function(x, y) {
+  stopifnot(is.list(x), is.list(y))
+  list("or" = list(x, y))
+}
+
 #' Filter condition for database query
 #' 
 #' The `property_filter()` function applies a filter condition within a database
@@ -157,6 +231,47 @@ property_sort <- function(property, timestamp = "last_edited_time", direction = 
   }
   srt <- new_sort(list(property), timestamp, direction)
   format(srt)
+}
+
+#' Construct body for database query
+#' 
+#' 
+query_body <- function(filter = NULL, sorts = NULL) {
+  body_ls <- list()
+  if (!is.null(filter)) {
+    stopifnot(is.list(filter))
+    body_ls <- append(body_ls, list("filter" = filter))
+  }
+  if (!is.null(sorts)) {
+    stopifnot(is.list(sorts))
+    if (!"notionr_compound_sort" %in% class(sorts)) sorts <- list(sorts)
+    body_ls <- append(body_ls, list("sorts" = sorts))
+  }
+  if (identical(body_ls, list())) body_ls <- NULL
+  return(body_ls)
+}
+
+# Reverse code property types
+reverse_code_types <- function(type) {
+  real_type <- if (type %in% c("rich_text", "url", "email", "phone")) {
+    "text"
+  } else if (type %in% c("date", "created_time", "last_edited_time")) {
+    "date"
+  } else if (type %in% c("text",
+                         "date",
+                         "people", 
+                         "files", 
+                         "relation",
+                         "formula", 
+                         "number",
+                         "checkbox",
+                         "select",
+                         "multi_select")) {
+    type
+  } else {
+    stop("Invalid entry for 'type'")
+  }
+  return(real_type)
 }
 
 # Valid checkbox properties
@@ -250,128 +365,4 @@ valid_text_properties <- function() {
     "ends_with",
     "is_empty",
     "is_not_empty")
-}
-
-# Parse a formula into its variables
-parse_formula <- function(x) {
-  coerced_x <- coerce_formula(x)
-  stopifnot(coerced_x$is_formula)
-  x <- coerced_x$formula
-  if (attributes(terms(hi ~ there))$response == 0) stop("Missing formula LHS", call. = FALSE)
-  lhs <- as.character(x[[2]])
-  rhs <- if (inherits(x[[3]], "name")) {
-    as.character(x[[3]])
-  } else {
-    x[[3]]
-  }
-  if (!(is.null(rhs) || 
-        is.numeric(rhs) || 
-        nzchar(rhs) ||
-        isTRUE(rhs) ||
-        isFALSE(rhs))) {
-    stop("Formula rhs must be one of class 'character', 'numeric', 'NULL', or 'logical'")
-  }
-  return(list(lhs = lhs, rhs = rhs))
-}
-
-# Is something a formula or coercible to one?
-coerce_formula <- function(x) {
-  if (inherits(x, "formula")) {
-    form <- x
-    is_formula <- TRUE
-  } else {
-    form <- tryCatch(as.formula(x), error = function(e) NULL)
-    is_formula <- inherits(form, "formula")
-  }
-  return(list("is_formula" = is_formula,
-              "formula" = form))
-}
-
-# # Is something a notion boolean?
-# is_notion_bool <- function(x) {
-#   convert <- tryCatch(r_notion_bool_convert(x, source = "notion"),
-#                       error = function(e) "no")
-#   !inherits(convert, "character")
-# }
-
-# Replace NULL with empty json body
-replace_null <- function(x) {
-  stopifnot(all(c("lhs", "rhs") %in% attributes(x)$names))
-  x$rhs <- if (is.null(x$rhs)) {
-    "{}"
-  } else {
-    x$rhs
-  }
-  return(x)
-}
-
-# Format filter and sort body as json
-jsonize <- function(x, pretty = FALSE) {
-  jsonlite::toJSON(x, auto_unbox = TRUE, pretty = pretty)
-}
-
-# Compound and function
-and <- function(x, y) {
-  stopifnot(is.list(x), is.list(y))
-  list("and" = list(x, y))
-}
-
-# Compound or function
-or <- function(x, y) {
-  stopifnot(is.list(x), is.list(y))
-  list("or" = list(x, y))
-}
-
-# Combine compound and & or functions
-compound_filter <- function(x, y, type = "and") {
-  if (!type %in% c("and", "or")) stop("Only supports type 'and' or 'or'", call. = FALSE)
-  if (type == "and") return(and(x, y))
-  or(x, y)
-}
-
-# Combine many sorts into one
-compound_sort <- function(...) {
-  x <- list(...)
-  if (!all(unlist(lapply(x, is.list)))) {
-    stop("Each object must be a list returned by the 'property_sort' function")
-  }
-  class(x) <- c("list", "notionr_compound_sort")
-  return(x)
-}
-
-# Function that constructs full query body
-query_body <- function(filter = NULL, sorts = NULL) {
-  body_ls <- list()
-  if (!is.null(filter)) {
-    stopifnot(is.list(filter))
-    body_ls <- append(body_ls, list("filter" = filter))
-  }
-  if (!is.null(sorts)) {
-    stopifnot(is.list(sorts))
-    if (!"notionr_compound_sort" %in% class(sorts)) sorts <- list(sorts)
-    body_ls <- append(body_ls, list("sorts" = sorts))
-  }
-  if (identical(body_ls, list())) body_ls <- NULL
-  return(body_ls)
-}
-
-# Reverse code property types
-reverse_code_types <- function(type) {
-  real_type <- if (type %in% c("rich_text", "url", "email", "phone")) {
-    "text"
-  } else if (type %in% c("date", "created_time", "last_edited_time")) {
-    "date"
-  } else if (type %in% c("people", 
-                         "files", 
-                         "relation",
-                         "formula", 
-                         "number",
-                         "checkbox",
-                         "select",
-                         "multi_select")) {
-    type
-  } else {
-    stop("Invalid entry for 'type'")
-  }
-  return(real_type)
 }
