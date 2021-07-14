@@ -1,4 +1,28 @@
-# Create a low-level notion filter
+#' Filter condition for database query
+#' 
+#' The `property_filter()` function applies a filter condition within a database
+#' query to limit which pages are returned.
+#' 
+#' The `property_filter()` applies to a particular database property, by name or
+#' id. It applies a user-supplied condition to this property to limit which
+#' pages are returned. For a full set of valid properties and property types,
+#' see the \href{https://developers.notion.com/reference/post-database-query#post-database-query-filter}{documentation here}.
+#' This filter is only meant for use within the \code{\link{query_database}}
+#' function.
+#' 
+#' @param property A character string; the name of the property to apply the 
+#'   filter to.
+#' @param type A character string; the property type as identified by Notion.
+#' @param body A two-sided formula. The left hand side specifies the filter
+#'   condition property — valid condition properties depend on the filter type —
+#'   and the right had side specifies the filtering value.
+#' @examples 
+#' property_filter(
+#'   property = "Landmark",
+#'   type = "rich_text",
+#'   body = contains ~ "Bridge"
+#' )
+#' @return A list; a formatted property filter.
 property_filter <- function(property, type, body) {
   type <- reverse_code_types(type)
   body <- parse_formula(body)
@@ -23,19 +47,6 @@ property_sort <- function(property, timestamp = "last_edited_time", direction = 
   srt <- new_sort(list(property), timestamp, direction)
   format(srt)
 }
-
-
-# r_notion_bool_convert <- function(x, source = "r") {
-#   if (!source %in% c("r", "notion")) stop("Source must be either 'r' or 'notion'")
-#   if (source == "notion") {
-#     if (!x %in% c("true", "false")) stop("Not a Notion boolean value")
-#     if (x == "true") return(TRUE)
-#     return(FALSE)
-#   }
-#   if (!x %in% c(TRUE, FALSE) || is.na(x)) stop("Not an R boolean value")
-#   if (x) return("true")
-#   return("false")
-# }
 
 # Define constructor for text filter class
 new_filter <- function(x = list(), type = "text", property = "equals") {
