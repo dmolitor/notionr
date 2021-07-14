@@ -4,12 +4,13 @@ new_user <- function(x) {
   if (!all(c("object", "id", "type", "name", "avatar_url") %in% names(x))) {
     stop("Missing essential user fields", call. = FALSE)
   }
+  stopifnot(x$type %in% c("person", "bot"))
   class(x) <- "notionr_user"
   x
 }
 
 # Acces list users endpoint
-list_users <- function(key) {
+users <- function(key) {
   stopifnot(is.character(key))
   # Empty content list to grab content from each page
   content_ls <- list()
@@ -21,16 +22,34 @@ list_users <- function(key) {
     }),
     recursive = FALSE
   )
-  condense_list_users_content(content_ls)
+  lapply(content_ls, new_user)
 }
 
-# Helper function for list_users
-condense_list_users_content <- function(list.users.ls) {
-  if (!length(list.users.ls) > 0) stop("list_users returned empty content", call. = FALSE)
-  result_fxn <- function(i) {
-    dplyr::bind_rows(
-      lapply(i$results, function(j) suppressWarnings(dplyr::bind_cols(j)))
+# Object content for User class
+object_content.notionr_user <- function(x) {
+  x <- unclass(x)
+  if (x$type == "person") x[["email"]] <- x$person$email
+  x[[x$type]] <- NULL
+  dplyr::bind_cols(x)
+}
+
+# List all users
+list_users <- function(key) {
+  user_ls <- users(key)
+  dplyr::bind_rows(
+    lapply(user_ls, object_content)
+  )
+}
+
+# Retrieve a specific user
+retrieve_user <- function(key, user.id) {
+  url <- paste0("https://api.notion.com/v1/users/", user.id)
+  cont <- httr::content(
+    httr::stop_for_status(
+      httr::GET(url = url,
+                httr::add_headers("Authorization" = paste("Bearer", key),
+                                  "Notion-Version" = "2021-05-13"))
     )
-  }
-  dplyr::bind_rows(lapply(list.users.ls, result_fxn))
+  )
+  new_user(cont)
 }

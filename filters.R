@@ -1,51 +1,39 @@
-#' Filter condition for database query
-#' 
-#' The `property_filter()` function applies a filter condition within a database
-#' query to limit which pages are returned.
-#' 
-#' The `property_filter()` applies to a particular database property, by name or
-#' id. It applies a user-supplied condition to this property to limit which
-#' pages are returned. For a full set of valid properties and property types,
-#' see the \href{https://developers.notion.com/reference/post-database-query#post-database-query-filter}{documentation here}.
-#' This filter is only meant for use within the \code{\link{query_database}}
-#' function.
-#' 
-#' @param property A character string; the name of the property to apply the 
-#'   filter to.
-#' @param type A character string; the property type as identified by Notion.
-#' @param body A two-sided formula. The left hand side specifies the filter
-#'   condition property — valid condition properties depend on the filter type —
-#'   and the right had side specifies the filtering value.
-#' @examples 
-#' property_filter(
-#'   property = "Landmark",
-#'   type = "rich_text",
-#'   body = contains ~ "Bridge"
-#' )
-#' @return A list; a formatted property filter.
-property_filter <- function(property, type, body) {
-  type <- reverse_code_types(type)
-  body <- parse_formula(body)
-  encode.as.character <- is.character(body$rhs)
-  body <- replace_null(body)
-  # Create a new filter object
-  fltr <- new_filter(x = list(body$rhs), type = type, property = body$lhs)
-  # format filter
-  fltr_formatted <- format(fltr, encode.as.character = encode.as.character)
-  # Add property field
-  fltr_formatted <- append(fltr_formatted,
-                           list("property" = property), 
-                           after = 0)
-  return(fltr_formatted)
+# Encode character values
+encode_character <- function(x) {
+  stopifnot(is.character(x))
+  paste0("'", x, "'")
 }
 
-# Create a low-level notion sort
-property_sort <- function(property, timestamp = "last_edited_time", direction = "descending") {
-  if (length(unlist(property)) > 1) {
-    stop("To combine many sorts, please use the 'compound_sort' function")
+# Creating a method for formatting objects with class notionr_filter
+format.notionr_filter <- function(x, encode.as.character = TRUE) {
+  x <- unclass(x)
+  val <- if (encode.as.character) {
+    encode_character(x[[1]])
+  } else {
+    x[[1]]
   }
-  srt <- new_sort(list(property), timestamp, direction)
-  format(srt)
+  attrs <- attributes(x)
+  property <- attrs$property
+  type <- attrs$type
+  expr <- paste0("list(", type, "=", "list(", property, "=", val, "))")
+  eval(str2expression(expr))
+}
+
+# Creating a method for formatting objects with class notionr_sort
+format.notionr_sort <- function(x) {
+  x <- unclass(x)
+  val <- encode_character(x[[1]])
+  attrs <- attributes(x)
+  timestamp <- encode_character(attrs$timestamp)
+  direction <- encode_character(attrs$direction)
+  expr <- paste0("list(property=",
+                 val,
+                 ",timestamp=",
+                 timestamp,
+                 ",direction=",
+                 direction, 
+                 ")")
+  eval(str2expression(expr))
 }
 
 # Define constructor for text filter class
@@ -98,50 +86,83 @@ new_sort <- function(x = list(), timestamp = "last_edited_time", direction = "de
             direction = direction)
 }
 
-# Valid text properties
-valid_text_properties <- function() {
-  c("equals",
-    "does_not_equal",
-    "contains",
-    "does_not_contain",
-    "starts_with",
-    "ends_with",
-    "is_empty",
-    "is_not_empty")
+#' Filter condition for database query
+#' 
+#' The `property_filter()` function applies a filter condition within a database
+#' query to limit which pages are returned.
+#' 
+#' The `property_filter()` applies to a particular database property, by name or
+#' id. It applies a user-supplied condition to this property to limit which
+#' pages are returned. For a full set of valid properties and property types,
+#' see the \href{https://developers.notion.com/reference/post-database-query#post-database-query-filter}{documentation here}.
+#' This filter is only meant for use within the \code{\link{query_database}}
+#' function.
+#' 
+#' @param property A character string; the name of the property to apply the 
+#'   filter to.
+#' @param type A character string; the property type as identified by Notion.
+#' @param body A two-sided formula. The left hand side specifies the filter
+#'   condition property - valid condition properties depend on the filter type -
+#'   and the right had side specifies the filtering value.
+#' @examples 
+#' property_filter(
+#'   property = "Landmark",
+#'   type = "rich_text",
+#'   body = contains ~ "Bridge"
+#' )
+#' @return A list; a formatted property filter.
+#' @export
+property_filter <- function(property, type, body) {
+  type <- reverse_code_types(type)
+  body <- parse_formula(body)
+  encode.as.character <- is.character(body$rhs)
+  body <- replace_null(body)
+  # Create a new filter object
+  fltr <- new_filter(x = list(body$rhs), type = type, property = body$lhs)
+  # format filter
+  fltr_formatted <- format(fltr, encode.as.character = encode.as.character)
+  # Add property field
+  fltr_formatted <- append(fltr_formatted,
+                           list("property" = property), 
+                           after = 0)
+  return(fltr_formatted)
 }
 
-# Valid number properties
-valid_number_properties <- function() {
-  c("equals",
-    "does_not_equal",
-    "greater_than",
-    "less_than",
-    "greater_than_or_equal_to",
-    "less_than_or_equal_to",
-    "is_empty",
-    "is_not_empty")
+#' Sort condition for database query
+#' 
+#' The `property_sort()` function applies a sort condition within a database
+#' query to sort how pages are returned.
+#' 
+#' The `property_sort()` function applies to a particular database property, 
+#' by name or id. It applies a user-supplied condition to this property to sort
+#' pages are returned. This sort is only meant for use within the 
+#' \code{\link{query_database}} function.
+#' 
+#' @param property A character string; the name of the property to apply the 
+#'   sort to.
+#' @param timestamp A character string; must be one of `last_edited_time` or
+#'   `created_time`.
+#' @param direction A character string; must be one of `descending` or `ascending`.
+#' @examples 
+#' property_sort(
+#'   property = "Ingredients",
+#'   timestamp = "last_edited_time",
+#'   direction = "descending"
+#' )
+#' @return A list; a formatted property sort.
+#' @export
+property_sort <- function(property, timestamp = "last_edited_time", direction = "descending") {
+  if (length(unlist(property)) > 1) {
+    stop("To combine many sorts, please use the 'compound_sort' function")
+  }
+  srt <- new_sort(list(property), timestamp, direction)
+  format(srt)
 }
 
 # Valid checkbox properties
 valid_checkbox_properties <- function() {
   c("equals",
     "does_not_equal")
-}
-
-# Valid select properties
-valid_select_properties <- function() {
-  c("equals",
-    "does_not_equal",
-    "is_empty",
-    "is_not_empty")
-}
-
-# Valid multi-select properties
-valid_multiselect_properties <- function() {
-  c("contains",
-    "does_not_contain",
-    "is_empty",
-    "is_not_empty")
 }
 
 # Valid date properties
@@ -161,25 +182,9 @@ valid_date_properties <- function() {
     "next_year")
 }
 
-# Valid people properties
-valid_people_properties <- function() {
-  c("contains",
-    "does_not_contain",
-    "is_empty",
-    "is_not_empty")
-}
-
 # Valid files properties
 valid_files_properties <- function() {
   c("is_empty",
-    "is_not_empty")
-}
-
-# Valid relation properties
-valid_relation_properties <- function() {
-  c("contains",
-    "does_not_contain",
-    "is_empty",
     "is_not_empty")
 }
 
@@ -191,42 +196,60 @@ valid_formula_properties <- function() {
     "date")
 }
 
-# Creating a method for formatting objects with class notionr_filter
-format.notionr_filter <- function(x, encode.as.character = TRUE) {
-  x <- unclass(x)
-  val <- if (encode.as.character) {
-    encode_character(x[[1]])
-  } else {
-    x[[1]]
-  }
-  attrs <- attributes(x)
-  property <- attrs$property
-  type <- attrs$type
-  expr <- paste0("list(", type, "=", "list(", property, "=", val, "))")
-  eval(str2expression(expr))
+# Valid multi-select properties
+valid_multiselect_properties <- function() {
+  c("contains",
+    "does_not_contain",
+    "is_empty",
+    "is_not_empty")
 }
 
-# Creating a method for formatting objects with class notionr_sort
-format.notionr_sort <- function(x) {
-  x <- unclass(x)
-  val <- encode_character(x[[1]])
-  attrs <- attributes(x)
-  timestamp <- encode_character(attrs$timestamp)
-  direction <- encode_character(attrs$direction)
-  expr <- paste0("list(property=",
-                 val,
-                 ",timestamp=",
-                 timestamp,
-                 ",direction=",
-                 direction, 
-                 ")")
-  eval(str2expression(expr))
+# Valid number properties
+valid_number_properties <- function() {
+  c("equals",
+    "does_not_equal",
+    "greater_than",
+    "less_than",
+    "greater_than_or_equal_to",
+    "less_than_or_equal_to",
+    "is_empty",
+    "is_not_empty")
 }
 
-# Encode character values
-encode_character <- function(x) {
-  stopifnot(is.character(x))
-  paste0("'", x, "'")
+# Valid people properties
+valid_people_properties <- function() {
+  c("contains",
+    "does_not_contain",
+    "is_empty",
+    "is_not_empty")
+}
+
+# Valid relation properties
+valid_relation_properties <- function() {
+  c("contains",
+    "does_not_contain",
+    "is_empty",
+    "is_not_empty")
+}
+
+# Valid select properties
+valid_select_properties <- function() {
+  c("equals",
+    "does_not_equal",
+    "is_empty",
+    "is_not_empty")
+}
+
+# Valid text properties
+valid_text_properties <- function() {
+  c("equals",
+    "does_not_equal",
+    "contains",
+    "does_not_contain",
+    "starts_with",
+    "ends_with",
+    "is_empty",
+    "is_not_empty")
 }
 
 # Parse a formula into its variables
@@ -234,7 +257,7 @@ parse_formula <- function(x) {
   coerced_x <- coerce_formula(x)
   stopifnot(coerced_x$is_formula)
   x <- coerced_x$formula
-  if (length(x) < 3) stop("Missing formula lhs", call. = FALSE)
+  if (attributes(terms(hi ~ there))$response == 0) stop("Missing formula LHS", call. = FALSE)
   lhs <- as.character(x[[2]])
   rhs <- if (inherits(x[[3]], "name")) {
     as.character(x[[3]])

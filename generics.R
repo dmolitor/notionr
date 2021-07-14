@@ -13,6 +13,11 @@ children <- function(x, recursive = TRUE) {
   UseMethod("children")
 }
 
+# Create generic for printing object details
+details <- function(x, ...) {
+  UseMethod("details")
+}
+
 # Create generic for object content
 object_content <- function(x) {
   UseMethod("object_content")

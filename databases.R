@@ -1,4 +1,27 @@
-# Constructor for notion database class
+#' @export
+details.notionr_db <- function(x, ..., start.with = "\r") {
+  formatted_db <- format(x)
+  cat(formatted_db)
+  invisible(x)
+}
+
+# Format database information
+#
+# Formats database information in a format that is conducive for pretty printing
+format.notionr_db <- function(x, ..., start.with = "\r") {
+  unlist(
+    lapply(names(x), function(i) {
+      if (!is.list(x[[i]])) {
+        return(paste0(start.with, "", i, ": ", x[[i]], "\n"))
+      } else {
+        c(paste0(start.with, "", i, ":\n"),
+          unlist(format.notionr_db(x[[i]], start.with = paste0(start.with, "    "))))
+      }
+    })
+  )
+}
+
+# Constructor for class `notionr_db`
 new_database <- function(x) {
   stopifnot(is.list(x))
   if (
@@ -14,19 +37,13 @@ new_database <- function(x) {
     stop("Object is missing essential database fields", call. = FALSE)
   }
   # Unnest database title
-  x$title <- unlist(x$title, recursive = FALSE)
+  x$title <- new_rich_text_array(x$title)
   # Add database class
   class(x) <- "notionr_db"
   return(x)
 }
 
-# Method for summarizing database
-summary.notionr_db <- function(x, ..., start.with = "\r") {
-  formatted_db <- format(x)
-  cat(formatted_db)
-}
-
-# Method for printing database
+#' @export
 print.notionr_db <- function(x, ...) {
   els <- c("Title" = replace_null_zchar(x$title$plain_text),
            "Id" = replace_null_zchar(x$id),
@@ -41,31 +58,6 @@ print.notionr_db <- function(x, ...) {
            collapse = "\n\r")
   )
   invisible(x)
-}
-
-# Method for formatting database information
-format.notionr_db <- function(x, ..., start.with = "\r") {
-  unlist(
-    lapply(names(x), function(i) {
-      if (!is.list(x[[i]])) {
-        return(paste0(start.with, "", i, ": ", x[[i]], "\n"))
-      } else {
-        c(paste0(start.with, "", i, ":\n"),
-          unlist(format.notionr_db(x[[i]], start.with = paste0(start.with, "    "))))
-      }
-    })
-  )
-}
-
-# Database method for generic 'properties'
-properties.notionr_db <- function(x) {
-  dplyr::bind_rows(
-    lapply(names(x$properties), function(i) {
-      id <- ifelse(is.null(x$properties[[i]]$id), NA, x$properties[[i]]$id)
-      type <- ifelse(is.null(x$properties[[i]]$type), NA, x$properties[[i]]$type)
-      dplyr::tibble("field" = i, "id" = id, "type" = type)
-    })
-  )
 }
 
 # Database method for generic 'id'
@@ -98,6 +90,17 @@ list_database_ids <- function(key) {
       list_databases(key),
       id
     )
+  )
+}
+
+# Database method for generic 'properties'
+properties.notionr_db <- function(x) {
+  dplyr::bind_rows(
+    lapply(names(x$properties), function(i) {
+      id <- ifelse(is.null(x$properties[[i]]$id), NA, x$properties[[i]]$id)
+      type <- ifelse(is.null(x$properties[[i]]$type), NA, x$properties[[i]]$type)
+      dplyr::tibble("field" = i, "id" = id, "type" = type)
+    })
   )
 }
 

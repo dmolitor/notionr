@@ -62,18 +62,18 @@ object_content.notionr_rich_text_array <- function(x) {
 
 # Object content method for text class
 object_content.notionr_text <- function(x) {
-  x$content
+  list("text" = x$content)
 }
 
 # Object content method for mention class
 object_content.notionr_mention <- function(x) {
   mention_type <- x$type
-  x[[mention_type]]
+  list("mention" = x[[mention_type]])
 }
 
 # Object content method for equation class
 object_content.notionr_equation <- function(x) {
-  x$expression
+  list("equation" = x$expression)
 }
 
 # Function to get the plain text from rich_text object
