@@ -90,7 +90,7 @@ plain_text_array <- function(x) {
 
 # Basics ------------------------------------------------------------------
 
-# constructor for basic (number, checkbox, url, email, phone_number, created_time, created_by, last_edited_time, last_edited_by) class
+# constructor for basic (number, checkbox, url, email, phone_number, created_time, created_by, last_edited_time, last_edited_by, select) class
 new_basic <- function(x) {
   stopifnot(is.vector(x) && is.atomic(x))
   class(x) <- "notionr_basic"
@@ -102,122 +102,19 @@ object_content.notionr_basic <- function(x) {
   unclass(x)
 }
 
-# Select ------------------------------------------------------------------
+# Nested Basics -----------------------------------------------------------
 
-# Constructor for select class
-new_select <- function(x) {
-  stopifnot(is.list(x), names(x) %in% c("id", "name", "color"))
-  class(x) <- "notionr_basic"
-  x
-}
-
-# Method for object content for select class
-object_content.notionr_select <- function(x) {
-  unclass(x)
-}
-
-# Multi-select ------------------------------------------------------------
-
-# Constructor for multiselect class
-new_multi_select <- function(x) {
+# constructor for nested basics (formula, rollup) classes
+new_nested_basic <- function(x) {
   stopifnot(is.list(x))
-  class(x) <- "notionr_multi_select"
+  class(x) <- "notionr_nested_basic"
   x
 }
 
-# Method for object content for multi select class
-object_content.notionr_multi_select <- function(x) {
-  unclass(x)
-}
-
-# Date --------------------------------------------------------------------
-
-# Constructor for date class
-new_date <- function(x) {
-  stopifnot(is.list(x), names(x) %in% c("start", "end"))
-  class(x) <- "notionr_date"
-  x
-}
-
-# Method for object content for date class
-object_content.notionr_date <- function(x) {
-  unclass(x)
-}
-
-# Formula -----------------------------------------------------------------
-
-# Constructor for formula class
-new_formula <- function(x) {
-  stopifnot(is.list(x), x$type %in% c("string", "number", "boolean", "date"))
-  if (x$type == "date") x[["date"]] <- new_date(x[["date"]])
-  class(x) <- "notionr_formula"
-  x
-}
-
-# Method for object content for formula class
-object_content.notionr_formula <- function(x) {
-  type <- x$type
-  if (type == "date") return(object_content(x[[type]]))
-  x[[type]]
-}
-
-# Relation ----------------------------------------------------------------
-
-# Constructor for relation class
-new_relation <- function(x) {
-  stopifnot(is.list(x))
-  class(x) <- "notionr_relation"
-  x
-}
-
-# Method for object content for relation class
-object_content.notionr_relation <- function(x) {
-  unclass(x)
-}
-
-# Rollup ------------------------------------------------------------------
-
-# Constructor for rollup class
-new_rollup <- function(x) {
-  stopifnot(is.list(x), x$type %in% c("number", "date", "array"))
-  if (x$type == "date") x[["date"]] <- new_date(x[["date"]])
-  class(x) <- "notionr_rollup"
-  x
-}
-
-# Method for object content for rollup class
-object_content.notionr_rollup <- function(x) {
-  type <- x$type
-  if (type == "date") return(object_content(x[[type]]))
-  x[[type]]
-}
-
-# People ------------------------------------------------------------------
-
-# constructor for people class
-new_people <- function(x) {
-  stopifnot(is.list(x))
-  class(x) <- "notionr_people"
-  x
-}
-
-# Method for object content for people class
-object_content.notionr_people <- function(x) {
-  unclass(x)
-}
-
-# Files -------------------------------------------------------------------
-
-# constructor for files class
-new_files <- function(x) {
-  stopifnot(is.list(x))
-  class(x) <- "notionr_files"
-  x
-}
-
-# Method for object content for files class
-object_content.notionr_files <- function(x) {
-  unclass(x)
+# Method for object content for basic class
+object_content.notionr_nested_basic <- function(x) {
+  x <- unclass(x)
+  x[[x$type]]
 }
 
 # Classify page property objects ------------------------------------------
@@ -267,11 +164,16 @@ classify_page_property <- function(x) {
                          "created_time",
                          "created_by", 
                          "last_edited_time",
-                         "last_edited_by")) {
+                         "last_edited_by",
+                         "select",
+                         "multi_select",
+                         "date",
+                         "relation",
+                         "people",
+                         "files")) {
     x[[type]] <- new_basic(x[[type]])
   } else {
-    f <- paste0("new_", type)
-    x[[type]] <- eval(call(f, x[[type]]))
+    x[[type]] <- new_nested_basic(x[[type]])
   }
   x
 }
