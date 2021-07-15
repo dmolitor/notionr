@@ -45,7 +45,7 @@ new_database <- function(x) {
 
 #' @export
 print.notionr_db <- function(x, ...) {
-  els <- c("Title" = replace_null_zchar(x$title$plain_text),
+  els <- c("Title" = title(x),
            "Id" = replace_null_zchar(x$id),
            "Created date" = replace_null_zchar(as.character(as.Date(x$created_time))),
            "Last edited date" = replace_null_zchar(as.character(as.Date(x$last_edited_time))),
@@ -60,34 +60,50 @@ print.notionr_db <- function(x, ...) {
   invisible(x)
 }
 
-# Database method for generic 'id'
+#' @export
 id.notionr_db <- function(x) {
-  name <- ifelse(is.null(x$title$plain_text),
-                 NA,
-                 x$title$plain_text)
+  name <- title(x)
   dplyr::tibble("name" = name, "id" = x$id)
 }
 
-# Function that lists every database object
-list_databases <- function(key) {
+#' List all Databases
+#' 
+#' Return a list of all database objects. Allows the user to apply a query
+#' filter or sort direction, as seen in the \code{\link{search}} function, to
+#' alter how/which objects are returned.
+#' 
+#' @param key Notion access key as a character.
+#' @param query A string which limits which pages are returned by comparing the 
+#'   query to the page title. If `NULL`, no limiting occurs.
+#' @param sort A search sort object. If `NULL`, no sorting will occur.
+#' @return A list of database objects.
+#' @seealso [search()] for examples of sorts.
+#' @export
+list_databases <- function(key, query = NULL, sort = NULL) {
   stopifnot(is.character(key))
-  # Empty content list to grab content from each page
-  content_ls <- list()
-  recurse_cursors_get(endpoint = "https://api.notion.com/v1/databases", 
-                      key = key)
-  unlist(
-    lapply(content_ls, function(i) {
-      lapply(i$results, new_database)
-    }),
-    recursive = FALSE
-  )
+  search(key, 
+         query = query, 
+         sort = sort, 
+         filter = search_filter(value = "database"))
 }
 
-# Function that returns all database IDs
-list_database_ids <- function(key) {
+#' Retrieve all database names and IDs
+#' 
+#' Access all database names and IDs in a tidy format. This is particularly
+#' useful for getting a quick overview of all databases and selecting a
+#' specific ID to access an individual database.
+#' 
+#' @param key Notion access key as a character.
+#' @param query A string which limits which pages are returned by comparing the 
+#'   query to the page title. If `NULL`, no limiting occurs.
+#' @param sort A search sort object. If `NULL`, no sorting will occur.
+#' @seealso [search()] and [list_databases()]
+#' @return A data.frame containing database names and IDs.
+#' @export
+list_database_ids <- function(key, query = NULL, sort = NULL) {
   dplyr::bind_rows(
     lapply(
-      list_databases(key),
+      list_databases(key, query, sort),
       id
     )
   )
@@ -104,7 +120,14 @@ properties.notionr_db <- function(x) {
   )
 }
 
-# Function to retrieve a database
+#' Retrieve an individual database
+#' 
+#' Access a specific database using it's unique identifier.
+#' 
+#' @param key Notion access key as a string.
+#' @param database.id Unique database identifier as a string.
+#' @return A database object.
+#' @export
 retrieve_database <- function(key, database.id) {
   url <- sprintf("https://api.notion.com/v1/databases/%s", database.id)
   db <- httr::content(
@@ -118,4 +141,12 @@ retrieve_database <- function(key, database.id) {
   )
   db_out <- new_database(db)
   return(db_out)
+}
+
+# Title method for Databases
+title.notionr_db <- function(x, all.titles = FALSE) {
+  if (identical(unclass(x$title), list())) return(NA)
+  titles <- plain_text_array(x$title)
+  if (all.titles) return(titles)
+  titles[[1]]
 }

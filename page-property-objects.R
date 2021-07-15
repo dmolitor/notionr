@@ -1,5 +1,19 @@
 # Rich text ---------------------------------------------------------------
 
+# Constructor for equation class
+new_equation <- function(x) {
+  stopifnot(names(x) == "equation", length(x) == 1)
+  class(x) <- "notionr_equation"
+  x
+}
+
+# Constructor for mention class
+new_mention <- function(x) {
+  stopifnot(is.list(x), length(x) == 2, "type" %in% names(x))
+  class(x) <- "notionr_mention"
+  x
+}
+
 # constructor for rich text class
 new_rich_text <- function(x) {
   stopifnot(is.list(x))
@@ -33,20 +47,6 @@ new_text <- function(x) {
     stop("Missing essential text properties", call. = FALSE)
   }
   class(x) <- "notionr_text"
-  x
-}
-
-# Constructor for mention class
-new_mention <- function(x) {
-  stopifnot(is.list(x), length(x) == 2, "type" %in% names(x))
-  class(x) <- "notionr_mention"
-  x
-}
-
-# Constructor for equation class
-new_equation <- function(x) {
-  stopifnot(names(x) == "equation", length(x) == 1)
-  class(x) <- "notionr_equation"
   x
 }
 
@@ -88,24 +88,6 @@ plain_text_array <- function(x) {
   unlist(lapply(x, plain_text), recursive = FALSE)
 }
 
-# Title -------------------------------------------------------------------
-
-# Constructor for title class
-new_title <- function(x) {
-  if (is.null(x)) {
-    x <- list()
-    class(x) <- "notionr_title"
-    return(x)
-  }
-  class(x) <- "notionr_title"
-  x
-}
-
-# Method for object content for title class
-object_content.notionr_title <- function(x) {
-  x$plain_text
-}
-
 # Basics ------------------------------------------------------------------
 
 # constructor for basic (number, checkbox, url, email, phone_number, created_time, created_by, last_edited_time, last_edited_by) class
@@ -125,7 +107,7 @@ object_content.notionr_basic <- function(x) {
 # Constructor for select class
 new_select <- function(x) {
   stopifnot(is.list(x), names(x) %in% c("id", "name", "color"))
-  class(x) <- "notionr_select"
+  class(x) <- "notionr_basic"
   x
 }
 
