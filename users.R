@@ -9,7 +9,36 @@ new_user <- function(x) {
   x
 }
 
-# Acces list users endpoint
+#' List all workspace users
+#' 
+#' This function retrieves user information for all users with access to a
+#' workspace and returns it in a tidy format.
+#' 
+#' @param key Notion access key.
+#' @return A data.frame with user information.
+#' @export
+list_users <- function(key) {
+  user_ls <- users(key)
+  dplyr::bind_rows(
+    lapply(user_ls, object_content)
+  )
+}
+
+# Object content for User class
+object_content.notionr_user <- function(x) {
+  x <- unclass(x)
+  if (x$type == "person") x[["email"]] <- x$person$email
+  x[[x$type]] <- NULL
+  dplyr::bind_cols(x)
+}
+
+#' Get users
+#' 
+#' This endpoint retrieves all users with authorized access to a workspace
+#' 
+#' @param key Notion access key
+#' @return A list of user objects
+#' @export
 users <- function(key) {
   stopifnot(is.character(key))
   # Empty content list to grab content from each page
@@ -25,23 +54,15 @@ users <- function(key) {
   lapply(content_ls, new_user)
 }
 
-# Object content for User class
-object_content.notionr_user <- function(x) {
-  x <- unclass(x)
-  if (x$type == "person") x[["email"]] <- x$person$email
-  x[[x$type]] <- NULL
-  dplyr::bind_cols(x)
-}
-
-# List all users
-list_users <- function(key) {
-  user_ls <- users(key)
-  dplyr::bind_rows(
-    lapply(user_ls, object_content)
-  )
-}
-
-# Retrieve a specific user
+#' Retrieve a user object
+#' 
+#' This function will retrieve a particular user, referenced by ID. This ID can
+#' most easily be accessed using the \code{\link{list_users}} function.
+#' 
+#' @param key Notion access key.
+#' @param user.id Unique user ID as a string.
+#' @return A user object.
+#' @export
 retrieve_user <- function(key, user.id) {
   url <- paste0("https://api.notion.com/v1/users/", user.id)
   cont <- httr::content(
