@@ -1,10 +1,5 @@
-is_null <- function(x) {
-  stopifnot(length(x) > 0)
-  unlist(lapply(x, is.null))
-}
-
 # Helper function for GETting all paginated Notion endpoints
-recurse_cursors_get <- function(endpoint, key, cursor = NULL, pos.up.stack = 1) {
+recurse_cursors_get <- function(endpoint, key, cursor = NULL, cont.ls) {
   url <- httr::modify_url(url = endpoint, 
                           query = list("start_cursor" = cursor))
   output <- httr::content(
@@ -16,22 +11,20 @@ recurse_cursors_get <- function(endpoint, key, cursor = NULL, pos.up.stack = 1) 
       )
     )
   )
-  assign(x = "content_ls", 
-         value = append(get("content_ls", 
-                            envir = parent.frame(n = pos.up.stack)), 
-                        list(output)),
-         envir = parent.frame(n = pos.up.stack))
+  cont.ls <- append(cont.ls, list(output))
   if (output$has_more) {
-    recurse_cursors_get(endpoint, key, output$next_cursor, pos.up.stack + 1)
+    return(recurse_cursors_get(endpoint, key, output$next_cursor, cont.ls))
+  } else {
+    return(return(cont.ls))
   }
 }
 
 # Helper function for POSTing all paginated Notion endpoints
-recurse_cursors_post <- function(url, key, query.body = NULL, cursor = NULL, pos.up.stack = 1) {
+recurse_cursors_post <- function(url, key, query.body = NULL, cursor = NULL, cont.ls) {
   body <- if (!is.null(query.body)) {
-    append(query.body, list("start_cursor" = cursor))
+    append(query.body, list("start_cursor" = cursor, "page_size" = 100))
   } else {
-    list("start_cursor" = cursor)
+    list("start_cursor" = cursor, "page_size" = 100)
   }
   output <- httr::content(
     httr::stop_for_status(
@@ -44,12 +37,10 @@ recurse_cursors_post <- function(url, key, query.body = NULL, cursor = NULL, pos
       )
     )
   )
-  assign(x = "content_ls", 
-         value = append(get("content_ls", 
-                            envir = parent.frame(n = pos.up.stack)), 
-                        list(output)),
-         envir = parent.frame(n = pos.up.stack))
+  cont.ls <- append(cont.ls, list(output))
   if (output$has_more) {
-    recurse_cursors_post(url, key, query.body, output$next_cursor, pos.up.stack + 1)
+    return(recurse_cursors_post(url, key, query.body, output$next_cursor, cont.ls))
+  } else {
+    return(cont.ls)
   }
 }

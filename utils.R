@@ -17,6 +17,11 @@ encode_character <- function(x) {
   paste0("'", x, "'")
 }
 
+is_null <- function(x) {
+  stopifnot(length(x) > 0)
+  unlist(lapply(x, is.null))
+}
+
 # Format filter and sort body as json
 jsonize <- function(x, pretty = FALSE) {
   jsonlite::toJSON(x, auto_unbox = TRUE, pretty = pretty)
@@ -32,7 +37,7 @@ parse_formula <- function(x) {
   coerced_x <- coerce_formula(x)
   stopifnot(coerced_x$is_formula)
   x <- coerced_x$formula
-  if (attributes(terms(hi ~ there))$response == 0) stop("Missing formula LHS", call. = FALSE)
+  if (length(x) < 3) stop("Missing formula LHS", call. = FALSE)
   lhs <- as.character(x[[2]])
   rhs <- if (inherits(x[[3]], "name")) {
     as.character(x[[3]])
