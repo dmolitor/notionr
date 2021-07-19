@@ -1,3 +1,84 @@
+# Page method for generic 'children'
+children.notionr_page <- function(x, recursive = TRUE) {
+  stopifnot(recursive %in% c(TRUE, FALSE))
+  f <- ifelse(recursive, 
+              retrieve_block_children_recursive,
+              retrieve_block_children_nonrecursive)
+  key <- attributes(x)$key
+  page.id <- x$id
+  f(key, page.id)
+}
+
+# Page method for details
+details.notionr_page <- function(x, ..., start.with = "\r") {
+  formatted_page <- format(x)
+  cat(formatted_page)
+  invisible(x)
+}
+
+# Method for formatting page information
+format.notionr_page <- function(x, ..., start.with = "\r") {
+  unlist(
+    lapply(names(x), function(i) {
+      if (!is.list(x[[i]])) {
+        return(paste0(start.with, "", i, ": ", x[[i]], "\n"))
+      } else {
+        c(paste0(start.with, "", i, ":\n"),
+          unlist(format.notionr_page(x[[i]], start.with = paste0(start.with, "    "))))
+      }
+    })
+  )
+}
+
+# Page method for generic 'id'
+id.notionr_page <- function(x) {
+  name <- title(x)
+  dplyr::tibble("name" = name, "id" = x$id)
+}
+
+#' List all Pages
+#' 
+#' Return a list of all page objects. Allows the user to apply a query
+#' filter or sort direction, as seen in the \code{\link{search}} function, to
+#' alter how/which objects are returned.
+#' 
+#' @param key Notion access key as a character.
+#' @param query A string which limits which pages are returned by comparing the 
+#'   query to the page title. If `NULL`, no limiting occurs.
+#' @param sort A search sort object. If `NULL`, no sorting will occur.
+#' @return A list of database objects.
+#' @seealso [search()] for examples of sorts.
+#' @export
+list_pages <- function(key, query = NULL, sort = NULL) {
+  stopifnot(is.character(key))
+  search(key, 
+         query = query, 
+         sort = sort, 
+         filter = search_filter())
+}
+
+#' Retrieve all page names and IDs
+#' 
+#' Access all page names and IDs in a tidy format. This is particularly
+#' useful for getting a quick overview of all pages and selecting a
+#' specific ID to access an individual page.
+#' 
+#' @param key Notion access key as a character.
+#' @param query A string which limits which pages are returned by comparing the 
+#'   query to the page title. If `NULL`, no limiting occurs.
+#' @param sort A search sort object. If `NULL`, no sorting will occur.
+#' @seealso [search()] and [list_pages()]
+#' @return A data.frame containing page names and IDs.
+#' @export
+list_page_ids <- function(key, query = NULL, sort = NULL) {
+  dplyr::bind_rows(
+    lapply(
+      list_pages(key, query, sort),
+      id
+    )
+  )
+}
+
 # Constructor for notion page class
 new_page <- function(x) {
   stopifnot(is.list(x))
@@ -19,18 +100,11 @@ new_page <- function(x) {
   classify_page_properties(x)
 }
 
-# Method for formatting page information
-format.notionr_page <- function(x, ..., start.with = "\r") {
-  unlist(
-    lapply(names(x), function(i) {
-      if (!is.list(x[[i]])) {
-        return(paste0(start.with, "", i, ": ", x[[i]], "\n"))
-      } else {
-        c(paste0(start.with, "", i, ":\n"),
-          unlist(format.notionr_page(x[[i]], start.with = paste0(start.with, "    "))))
-      }
-    })
-  )
+# Object content method for class page
+object_content.notionr_page <- function(x) {
+  lapply(x$properties, function(i) {
+    object_content(i[[i$type]])
+  })
 }
 
 # Method for printing database
@@ -50,12 +124,6 @@ print.notionr_page <- function(x, ...) {
   invisible(x)
 }
 
-# Method for summarizing page
-summary.notionr_page <- function(x, ..., start.with = "\r") {
-  formatted_page <- format(x)
-  cat(formatted_page)
-}
-
 # Page method for generic 'properties'
 properties.notionr_page <- function(x) {
   dplyr::bind_rows(
@@ -67,38 +135,23 @@ properties.notionr_page <- function(x) {
   )
 }
 
-# Page method for generic 'children'
-children.notionr_page <- function(x, recursive = TRUE) {
-  stopifnot(recursive %in% c(TRUE, FALSE))
-  f <- ifelse(recursive, 
-              retrieve_block_children_recursive,
-              retrieve_block_children_nonrecursive)
-  key <- attributes(x)$key
-  page.id <- x$id
-  f(key, page.id)
-}
-
-# Object content method for class page
-object_content.notionr_page <- function(x) {
-  lapply(x$properties, function(i) {
-    object_content(i[[i$type]])
-  })
-}
-
-# Database method for generic 'id'
-id.notionr_page <- function(x) {
-  name <- ifelse(is.null(x$properties$Name$title$plain_text),
-                 NA,
-                 x$properties$Name$title$plain_text)
-  dplyr::tibble("name" = name, "id" = x$id)
-}
-
-# Queries database and returns list of pages based on the query body
+#' Query a database
+#' 
+#' Query a database and return pages contained in that database. Also allows the
+#' user to apply sorting and filtering logic to customize which/how pages are
+#' returned. For details on how to structure these filters and sorts, see
+#' \code{\link{query_body}}, \code{\link{property_filter}}, and 
+#' \code{\link{property_sort}}.
+#' 
+#' @param database.id The database ID as a character.
+#' @param key Notion access key.
+#' @param query.body The query body which contains potential filters and sorts.
+#' @return A list of pages.
+#' @export
 query_database <- function(database.id, key, query.body = NULL) {
   url <- paste0("https://api.notion.com/v1/databases/", database.id, "/query")
   # Empty content list
-  content_ls <- list()
-  recurse_cursors_post(url, key, query.body)
+  content_ls <- recurse_cursors_post(url, key, query.body, cont.ls = NULL)
   content_ls <- unlist(
     lapply(content_ls, function(i) {
       lapply(i$results, new_page)
@@ -110,7 +163,14 @@ query_database <- function(database.id, key, query.body = NULL) {
   })
 }
 
-# Function to retrieve a database
+#' Retrieve an individual page
+#' 
+#' Access a specific page using it's unique identifier.
+#' 
+#' @param key Notion access key as a string.
+#' @param page.id Unique database identifier as a string.
+#' @return A page object.
+#' @export
 retrieve_page <- function(key, page.id) {
   url <- paste0("https://api.notion.com/v1/pages/", page.id)
   page <- httr::content(
@@ -124,15 +184,6 @@ retrieve_page <- function(key, page.id) {
   )
   page_out <- new_page(page)
   `attr<-`(page_out, "key", key)
-}
-
-# List all pages in a database based on a query filter/sort
-list_page_ids <- function(key, query = NULL, sort = NULL) {
-  pages <- search(key, query = query, sort = sort, filter = search_filter())
-  dplyr::tibble(
-    "id" = unlist(lapply(pages, function(i) i$id)),
-    "title" = unlist(lapply(pages, title))
-  )
 }
 
 # Create title method for class notionr_page

@@ -59,7 +59,7 @@ classify_page_property <- function(x) {
 
 # constructor for basic (number, checkbox, url, email, phone_number, created_time, created_by, last_edited_time, last_edited_by, select) class
 new_basic <- function(x) {
-  stopifnot(is.vector(x) && is.atomic(x))
+  stopifnot((is.vector(x) && is.atomic(x)) || is.list(x))
   class(x) <- "notionr_basic"
   x
 }

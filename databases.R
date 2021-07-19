@@ -73,8 +73,8 @@ id.notionr_db <- function(x) {
 #' alter how/which objects are returned.
 #' 
 #' @param key Notion access key as a character.
-#' @param query A string which limits which pages are returned by comparing the 
-#'   query to the page title. If `NULL`, no limiting occurs.
+#' @param query A string which limits which databases are returned by comparing 
+#'   the query to the page title. If `NULL`, no limiting occurs.
 #' @param sort A search sort object. If `NULL`, no sorting will occur.
 #' @return A list of database objects.
 #' @seealso [search()] for examples of sorts.

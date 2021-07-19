@@ -100,9 +100,7 @@ retrieve_block_children_nonrecursive <- function(key, block.id) {
   stopifnot(is.character(key), is.character(block.id))
   url <- sprintf("https://api.notion.com/v1/blocks/%s/children", block.id)
   # Empty content list to grab content from each page
-  content_ls <- list()
-  recurse_cursors_get(endpoint = url, 
-                      key = key)
+  content_ls <- recurse_cursors_get(endpoint = url, key = key, cont.ls = NULL)
   c(
     "child" = unlist(
       lapply(content_ls, function(i) {
@@ -123,9 +121,7 @@ retrieve_block_children_recursive <- function(key, block.id) {
   stopifnot(is.character(key), is.character(block.id))
   url <- sprintf("https://api.notion.com/v1/blocks/%s/children", block.id)
   # Empty content list to grab content from each page
-  content_ls <- list()
-  recurse_cursors_get(endpoint = url, 
-                      key = key)
+  content_ls <- recurse_cursors_get(endpoint = url, key = key, cont.ls = NULL)
   out <- c(
     "child" = unlist(
       lapply(content_ls, function(i) {
