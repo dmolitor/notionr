@@ -1,15 +1,20 @@
 Package: notionr
-Title: What the Package Does (One Line, Title Case)
+Title: 'Notion' 'API'
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "Daniel",
+           family = "Molitor",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: `use_mit_license()`, `use_gpl3_license()` or friends to
-    pick a license
+           email = "molitdj97@gmail.com",
+           comment = c(website = "https://dmolitor.com"))
+Description: Minimal client to access the 'Notion' 'API'.
+License: MIT + file LICENSE
+Imports:
+    dplyr (>= 1.0.0),
+    httr (>= 1.4.0),
+    jsonlite (>= 1.0.0),
+    openssl,
+    stringr (>= 1.0.0)
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)

@@ -10,7 +10,7 @@ access_json <- function(id, secret) {
       httr::add_headers(
         "Authorization" = paste(
           "Basic",
-          httr:::base64url(
+          base64url(
             paste0(id, ":", secret)
           )
         )
@@ -19,7 +19,7 @@ access_json <- function(id, secret) {
                   "code" = code,
                   "redirect_uri" = httr::oauth_callback()),
       encode = "json"
-    ), 
+    ),
     task = "Failed to exchange authorization grant for access code"
   )
   httr::content(token_req, as = "text")
@@ -53,8 +53,8 @@ auth_url <- function(id, state) {
   sprintf(
     "https://api.notion.com/v1/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code&state=%s",
     id,
-    URLencode(httr::oauth_callback(),
-              reserved = TRUE),
+    utils::URLencode(httr::oauth_callback(),
+                     reserved = TRUE),
     state
   )
 }
@@ -78,14 +78,14 @@ available_cache_name <- function(cache.dir, workspace.name) {
 }
 
 #' Retrieve cached Notion access token
-#' 
+#'
 #' `cached_access_code` retrieves a cached Notion access token from the default
 #' cache directory, directory defined by environment variable, or user defined path
-#' 
+#'
 #' @param path A path to the local directory that contains the Notion access
 #'   token. If left `NULL`, it will be set as the default cache directory or
 #'   search for the environment variable `NOTIONR_CACHE`.
-#'   
+#'
 #' @return A character string that is the user's Notion access token.
 #'   If no access token exists, an error will be thrown
 #'
@@ -123,7 +123,7 @@ cached_access_code <- function(path = NULL) {
   if (cached_access_exists() == "environment") {
     workspace.name <- current_workspace_name(cache.dir = Sys.getenv("NOTIONR_CACHE"), type = "grab")
     json_body <- jsonlite::fromJSON(
-      jsonlite::read_json(paste0(Sys.getenv("NOTIONR_CACHE"), 
+      jsonlite::read_json(paste0(Sys.getenv("NOTIONR_CACHE"),
                                  "/",
                                  workspace.name,
                                  "/notionr_oauth_access.json"),
@@ -156,10 +156,10 @@ cache_access_info <- function(access, cache.dir = default_cache_dir(), workspace
   if (!jsonlite::validate(access)) stop("Access code is invalid .json format", call. = FALSE)
   stopifnot(is.character(cache.dir))
   if (!is.null(workspace.name)) {
-    jsonlite::write_json(access, 
-                         paste0(cache.dir, 
+    jsonlite::write_json(access,
+                         paste0(cache.dir,
                                 "/",
-                                workspace.name, 
+                                workspace.name,
                                 "/notionr_oauth_access.json"))
     cat("Access credentials have been stored at", paste0(cache.dir, "/", workspace.name, "/notionr_oauth_access.json\n"))
     return(invisible(NULL))
@@ -179,10 +179,10 @@ cache_access_info <- function(access, cache.dir = default_cache_dir(), workspace
       dir.create(paste0(cache.dir, "/", workspace_name))
     }
   }
-  jsonlite::write_json(access, 
-                       paste0(cache.dir, 
+  jsonlite::write_json(access,
+                       paste0(cache.dir,
                               "/",
-                              workspace_name, 
+                              workspace_name,
                               "/notionr_oauth_access.json"))
   cat("Access credentials have been stored at", paste0(cache.dir, "/", workspace_name, "/notionr_oauth_access.json\n"))
 }
@@ -196,7 +196,7 @@ current_workspace_name <- function(cache.dir, type = "refresh") {
   workspace_names <- workspace_names[!workspace_names == ""]
   if (identical(workspace_names, character(0))) stop("No workspaces found in specified cache directory", call. = FALSE)
   if (length(workspace_names) == 1) return(workspace_names)
-  which_workspace <- menu(
+  which_workspace <- utils::menu(
     choices = workspace_names,
     title = paste0("Which workspace would you like to ", type, " the access code for?")
   )
@@ -213,31 +213,31 @@ default_cache_dir <- function() {
 #
 # Ask the user how they want to handle clashing cache names
 handle_same_workspace_name <- function(cache.dir, workspace.name) {
-  refresh_or_nah <- menu(choices = c("Refresh a code for an existing workspace",
-                                     "This is a new workspace with the same name"),
-                         title = "You've already cached access credentials for a workspace with the same name. What do you want to do?")
+  refresh_or_nah <- utils::menu(choices = c("Refresh a code for an existing workspace",
+                                            "This is a new workspace with the same name"),
+                                title = "You've already cached access credentials for a workspace with the same name. What do you want to do?")
   return(refresh_or_nah)
 }
 
 #' Orchestrate the Notion authorization ritual
-#' 
+#'
 #' `notion_auth` guides the user to retrieving their Notion access token.
-#' 
-#' You are directed to a web browser, asked to sign in to your Notion account, 
+#'
+#' You are directed to a web browser, asked to sign in to your Notion account,
 #' and to grant notionr permission to operate on your behalf with Notion.
-#' By default, these user credentials are cached in a folder below your home 
-#' directory, ~/.R/notionr/oauth/, from where they can be automatically 
-#' refreshed, as necessary. Storage at the user level means the same token can 
-#' be used across multiple projects and tokens are less likely to be synced to 
+#' By default, these user credentials are cached in a folder below your home
+#' directory, ~/.R/notionr/oauth/, from where they can be automatically
+#' refreshed, as necessary. Storage at the user level means the same token can
+#' be used across multiple projects and tokens are less likely to be synced to
 #' the cloud by accident.
-#' 
+#'
 #' @param return.key A logical value indicating whether to return the auth
 #'   token without caching it.
 #' @param cache.dir A directory path indicating where to cache the auth token.
-#' 
+#'
 #' @return If `return.key` is `TRUE`, it will return the auth token as a
 #'   character string. Otherwise it will cache the token and return nothing.
-#'   
+#'
 #' @export
 notion_auth <- function(return.key = FALSE, cache.dir = default_cache_dir()) {
   stopifnot(return.key %in% c(TRUE, FALSE))
@@ -269,10 +269,10 @@ open_default_cache_dir <- function(workspace.dir = NULL) {
 #
 # Creates state string to ensure that the OAuth dance hasn't been compromised
 state_gen <- function() {
-  sprintf("%s%s%s", 
-          stringi::stri_rand_strings(1, 5, '[A-Z]'),
-          stringi::stri_rand_strings(1, 4, '[0-9]'), 
-          stringi::stri_rand_strings(1, 1, '[A-Z]'))
+  sprintf("%s%s%s",
+          paste0(sample(LETTERS, 5, TRUE), collapse = ""),
+          paste0(sample(0:9, 4, TRUE), collapse = ""),
+          paste0(sample(LETTERS, 1, TRUE), collapse = ""))
 }
 
 # Remove stray "-"s from workspace name

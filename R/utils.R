@@ -1,10 +1,19 @@
+# Base64 encode url
+base64url <- function (x) {
+  if (is.character(x)) {
+    x <- charToRaw(x)
+  }
+  out <- chartr("+/", "-_", openssl::base64_encode(x))
+  gsub("=+$", "", out)
+}
+
 # Is something a formula or coercible to one?
 coerce_formula <- function(x) {
   if (inherits(x, "formula")) {
     form <- x
     is_formula <- TRUE
   } else {
-    form <- tryCatch(as.formula(x), error = function(e) NULL)
+    form <- tryCatch(stats::as.formula(x), error = function(e) NULL)
     is_formula <- inherits(form, "formula")
   }
   return(list("is_formula" = is_formula,
@@ -39,8 +48,8 @@ parse_formula <- function(x) {
   } else {
     x[[3]]
   }
-  if (!(is.null(rhs) || 
-        is.numeric(rhs) || 
+  if (!(is.null(rhs) ||
+        is.numeric(rhs) ||
         nzchar(rhs) ||
         isTRUE(rhs) ||
         isFALSE(rhs))) {
