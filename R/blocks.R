@@ -20,7 +20,7 @@ details.notionr_block <- function(x, ..., start.with = "\r") {
 
 #' @method format notionr_block
 #' @export
-format.notionr_block <- function(x, ..., start.with = "\r") {
+format.notionr_block <- function(x, start.with = "\r", ...) {
   unlist(
     lapply(names(x), function(i) {
       if (!is.list(x[[i]])) {

@@ -74,7 +74,7 @@ compound_sort <- function(...) {
 
 #' @method format notionr_filter
 #' @export
-format.notionr_filter <- function(x, encode.as.character = TRUE) {
+format.notionr_filter <- function(x, encode.as.character = TRUE, ...) {
   x <- unclass(x)
   val <- if (encode.as.character) {
     encode_character(x[[1]])
@@ -90,7 +90,7 @@ format.notionr_filter <- function(x, encode.as.character = TRUE) {
 
 #' @method format notionr_sort
 #' @export
-format.notionr_sort <- function(x) {
+format.notionr_sort <- function(x, ...) {
   x <- unclass(x)
   val <- encode_character(x[[1]])
   attrs <- attributes(x)

@@ -36,9 +36,10 @@ children <- function(x, recursive = TRUE) {
 #' overview of an object's structure.
 #'
 #' @param x A page or database.
+#' @param ... Additional arguments to pass to `format`.
 #' @return Invisibly returns itself. Called primarily for the side effects.
 #' @export
-details <- function(x) {
+details <- function(x, ...) {
   UseMethod("details")
 }
 

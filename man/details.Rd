@@ -4,10 +4,12 @@
 \alias{details}
 \title{Print detailed object summary}
 \usage{
-details(x)
+details(x, ...)
 }
 \arguments{
 \item{x}{A page or database.}
+
+\item{...}{Additional arguments to pass to \code{format}.}
 }
 \value{
 Invisibly returns itself. Called primarily for the side effects.
