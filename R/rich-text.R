@@ -48,38 +48,43 @@ new_text <- function(x) {
   x
 }
 
-# Object content method for rich_text class
+#' @method object_content notionr_rich_text
+#' @export
 object_content.notionr_rich_text <- function(x) {
   object_content(x[[x$type]])
 }
 
-# Object content method for rich_text_array class
+#' @method object_content notionr_rich_text_array
+#' @export
 object_content.notionr_rich_text_array <- function(x) {
   unlist(lapply(x, object_content), recursive = FALSE)
 }
 
-# Object content method for text class
+#' @method object_content notionr_text
+#' @export
 object_content.notionr_text <- function(x) {
   list("text" = x$content)
 }
 
-# Object content method for mention class
+#' @method object_content notionr_mention
+#' @export
 object_content.notionr_mention <- function(x) {
   mention_type <- x$type
   list("mention" = x[[mention_type]])
 }
 
-# Object content method for equation class
+#' @method object_content notionr_equation
+#' @export
 object_content.notionr_equation <- function(x) {
   list("equation" = x$expression)
 }
 
 #' Extract plain text from rich text object
-#' 
+#'
 #' A rich text object has both a content property and a plain-text property. To
 #' access the content property, see \code{\link{object_content}}, and to access
 #' the plain text, use this function.
-#' 
+#'
 #' @param x A rich text object
 #' @return The plain text as a string.
 #' @export
@@ -89,9 +94,9 @@ plain_text <- function(x) {
 }
 
 #' Extract plain text from a rich text array
-#' 
+#'
 #' This function extracts all plain text elements from a rich text array object.
-#' 
+#'
 #' @param x A rich text array.
 #' @return A list of plain text elements.
 #' @seealso [plain_text()]

@@ -1,7 +1,8 @@
-# Children method for block objects
+#' @method children notionr_block
+#' @export
 children.notionr_block <- function(x, recursive = TRUE) {
   stopifnot(inherits(x, "notionr_block"), recursive %in% c(TRUE, FALSE))
-  f <- ifelse(recursive, 
+  f <- ifelse(recursive,
               retrieve_block_children_recursive,
               retrieve_block_children_nonrecursive)
   key <- attributes(x)$key
@@ -9,14 +10,16 @@ children.notionr_block <- function(x, recursive = TRUE) {
   f(key, block.id)
 }
 
-# Detail method for block objects
+#' @method details notionr_block
+#' @export
 details.notionr_block <- function(x, ..., start.with = "\r") {
   formatted_block <- format(x)
   cat(formatted_block)
   invisible(x)
 }
 
-# Method for formatting page information
+#' @method format notionr_block
+#' @export
 format.notionr_block <- function(x, ..., start.with = "\r") {
   unlist(
     lapply(names(x), function(i) {
@@ -31,9 +34,9 @@ format.notionr_block <- function(x, ..., start.with = "\r") {
 }
 
 #' Check if a block has children
-#' 
+#'
 #' Identifies if a block or page object has children.
-#' 
+#'
 #' @param x An object with class `notionr_block` or `notionr_page`
 #' @return Returns `TRUE` if its argument has children and `FALSE` otherwise.
 #' @export
@@ -50,7 +53,7 @@ new_block <- function(x) {
   stopifnot(is.list(x))
   if (
     !all(
-      c("object", 
+      c("object",
         "id",
         "type",
         "created_time",
@@ -68,7 +71,8 @@ new_block <- function(x) {
   return(x)
 }
 
-# Object content method for block
+#' @method object_content notionr_block
+#' @export
 object_content.notionr_block <- function(x) {
   x <- unclass(x)
   if (!(x$type %in% c("title", "unsupported"))) {
@@ -77,7 +81,8 @@ object_content.notionr_block <- function(x) {
   x[[x$type]]
 }
 
-# Print method for block objects
+#' @method print notionr_block
+#' @export
 print.notionr_block <- function(x, ...) {
   els <- c("Id" = x$id,
            "Type" = x$type,
@@ -85,8 +90,8 @@ print.notionr_block <- function(x, ...) {
            "Last edited date" = as.character(as.Date(x$last_edited_time)),
            "Has children" = x$has_children)
   cat(
-    paste0(names(els), 
-           ": ", 
+    paste0(names(els),
+           ": ",
            els,
            collapse = "\n\r")
   )

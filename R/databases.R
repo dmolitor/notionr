@@ -1,13 +1,13 @@
-# Details method for databases
+#' @method details notionr_db
+#' @export
 details.notionr_db <- function(x, ..., start.with = "\r") {
   formatted_db <- format(x)
   cat(formatted_db)
   invisible(x)
 }
 
-# Format database information
-#
-# Formats database information in a format that is conducive for pretty printing
+#' @method format notionr_db
+#' @export
 format.notionr_db <- function(x, ..., start.with = "\r") {
   unlist(
     lapply(names(x), function(i) {
@@ -26,8 +26,8 @@ new_database <- function(x) {
   stopifnot(is.list(x))
   if (
     !all(
-      c("object", 
-        "id", 
+      c("object",
+        "id",
         "created_time",
         "last_edited_time",
         "title",
@@ -43,7 +43,8 @@ new_database <- function(x) {
   return(x)
 }
 
-# Print method for databases
+#' @method print notionr_db
+#' @export
 print.notionr_db <- function(x, ...) {
   els <- c("Title" = ifelse(is.na(title(x)), "", title(x)),
            "Id" = replace_null_zchar(x$id),
@@ -52,28 +53,29 @@ print.notionr_db <- function(x, ...) {
            "Parent type" = replace_null_zchar(x$parent$type),
            "Parent Id" = replace_null_zchar(x$parent[[2]]))
   cat(
-    paste0(names(els), 
-           ": ", 
+    paste0(names(els),
+           ": ",
            els,
            collapse = "\n\r")
   )
   invisible(x)
 }
 
-# ID method for databases
+#' @method id notionr_db
+#' @export
 id.notionr_db <- function(x) {
   name <- title(x)
   dplyr::tibble("name" = name, "id" = x$id)
 }
 
 #' List all Databases
-#' 
+#'
 #' Return a list of all database objects. Allows the user to apply a query
 #' filter or sort direction, as seen in the \code{\link{search}} function, to
 #' alter how/which objects are returned.
-#' 
+#'
 #' @param key Notion access key as a character.
-#' @param query A string which limits which databases are returned by comparing 
+#' @param query A string which limits which databases are returned by comparing
 #'   the query to the page title. If `NULL`, no limiting occurs.
 #' @param sort A search sort object. If `NULL`, no sorting will occur.
 #' @return A list of database objects.
@@ -81,20 +83,20 @@ id.notionr_db <- function(x) {
 #' @export
 list_databases <- function(key, query = NULL, sort = NULL) {
   stopifnot(is.character(key))
-  search(key, 
-         query = query, 
-         sort = sort, 
+  search(key,
+         query = query,
+         sort = sort,
          filter = search_filter(value = "database"))
 }
 
 #' Retrieve all database names and IDs
-#' 
+#'
 #' Access all database names and IDs in a tidy format. This is particularly
 #' useful for getting a quick overview of all databases and selecting a
 #' specific ID to access an individual database.
-#' 
+#'
 #' @param key Notion access key as a character.
-#' @param query A string which limits which pages are returned by comparing the 
+#' @param query A string which limits which pages are returned by comparing the
 #'   query to the page title. If `NULL`, no limiting occurs.
 #' @param sort A search sort object. If `NULL`, no sorting will occur.
 #' @seealso [search()] and [list_databases()]
@@ -109,7 +111,8 @@ list_database_ids <- function(key, query = NULL, sort = NULL) {
   )
 }
 
-# Database method for generic 'properties'
+#' @method properties notionr_db
+#' @export
 properties.notionr_db <- function(x) {
   dplyr::bind_rows(
     lapply(names(x$properties), function(i) {
@@ -121,9 +124,9 @@ properties.notionr_db <- function(x) {
 }
 
 #' Retrieve an individual database
-#' 
+#'
 #' Access a specific database using it's unique identifier.
-#' 
+#'
 #' @param key Notion access key as a string.
 #' @param database.id Unique database identifier as a string.
 #' @return A database object.
@@ -143,7 +146,8 @@ retrieve_database <- function(key, database.id) {
   return(db_out)
 }
 
-# Title method for Databases
+#' @method title notionr_db
+#' @export
 title.notionr_db <- function(x, all.titles = FALSE) {
   if (identical(unclass(x$title), list())) return(NA)
   titles <- plain_text_array(x$title)

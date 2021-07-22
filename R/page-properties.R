@@ -12,37 +12,37 @@ classify_page_properties <- function(x) {
 classify_page_property <- function(x) {
   type <- match.arg(
     x$type,
-    c("rich_text", 
+    c("rich_text",
       "number",
-      "select", 
-      "multi_select", 
+      "select",
+      "multi_select",
       "date",
       "formula",
-      "relation", 
+      "relation",
       "rollup",
       "title",
-      "people", 
+      "people",
       "files",
       "checkbox",
-      "url", 
-      "email", 
+      "url",
+      "email",
       "phone_number",
-      "created_time", 
-      "created_by", 
-      "last_edited_time", 
+      "created_time",
+      "created_by",
+      "last_edited_time",
       "last_edited_by")
   )
   if (type == "rich_text") {
     x[[type]] <- new_rich_text_array(x[[type]])
   } else if (type == "title") {
     x[[type]] <- new_rich_text_array(x[[type]])
-  } else if (type %in% c("number", 
+  } else if (type %in% c("number",
                          "checkbox",
                          "url",
-                         "email", 
+                         "email",
                          "phone_number",
                          "created_time",
-                         "created_by", 
+                         "created_by",
                          "last_edited_time",
                          "last_edited_by",
                          "select",
@@ -65,7 +65,8 @@ new_basic <- function(x) {
   x
 }
 
-# Method for object content for basic class
+#' @method object_content notionr_basic
+#' @export
 object_content.notionr_basic <- function(x) {
   unclass(x)
 }
@@ -77,7 +78,8 @@ new_nested_basic <- function(x) {
   x
 }
 
-# Method for object content for basic class
+#' @method object_content notionr_nested_basic
+#' @export
 object_content.notionr_nested_basic <- function(x) {
   x <- unclass(x)
   x[[x$type]]

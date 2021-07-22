@@ -5,20 +5,20 @@ and <- function(x, y) {
 }
 
 #' Compound database filter
-#' 
+#'
 #' The `compound_filter` function combines two filters into a compound one. These
 #' filters can either be compound filters themselves, or single-level filters as
 #' described in \code{\link{property_filter}}. This filter is only meant for use
 #' within the \code{\link{query_database}} function.
-#' 
-#' Compound filters can be nested up to 2 levels deep. Currently there is no 
+#'
+#' Compound filters can be nested up to 2 levels deep. Currently there is no
 #' checking for this, so it's on the user to adhere to it.
-#' 
+#'
 #' @param x A property filter; either compound or single-level.
 #' @param y A property filter; either compound or single-level.
-#' @param type A string indicating what type of compound filter. Must be either 
+#' @param type A string indicating what type of compound filter. Must be either
 #'   `"and"` or `"or"`.
-#' @examples 
+#' @examples
 #' compound_filter(
 #'   x = property_filter(
 #'     property = "Landmark",
@@ -41,14 +41,14 @@ compound_filter <- function(x, y, type = "and") {
 }
 
 #' Compound database sort
-#' 
+#'
 #' The `compound_sort` function combines a list of sorts into a compound one.
 #' Each element in this list should be an output of \code{\link{property_sort}}.
-#' This function is only meant for use 
+#' This function is only meant for use
 #' within the \code{\link{query_database}} function.
-#' 
+#'
 #' @param ... A list of property sorts.
-#' @examples 
+#' @examples
 #' compound_sort(
 #'   property_sort(
 #'     property = "Ingredients",
@@ -72,7 +72,8 @@ compound_sort <- function(...) {
   return(x)
 }
 
-# Creating a method for formatting objects with class notionr_filter
+#' @method format notionr_filter
+#' @export
 format.notionr_filter <- function(x, encode.as.character = TRUE) {
   x <- unclass(x)
   val <- if (encode.as.character) {
@@ -87,7 +88,8 @@ format.notionr_filter <- function(x, encode.as.character = TRUE) {
   eval(str2expression(expr))
 }
 
-# Creating a method for formatting objects with class notionr_sort
+#' @method format notionr_sort
+#' @export
 format.notionr_sort <- function(x) {
   x <- unclass(x)
   val <- encode_character(x[[1]])
@@ -99,7 +101,7 @@ format.notionr_sort <- function(x) {
                  ",timestamp=",
                  timestamp,
                  ",direction=",
-                 direction, 
+                 direction,
                  ")")
   eval(str2expression(expr))
 }
@@ -120,7 +122,7 @@ new_filter <- function(x = list(), type = "text", property = "equals") {
       "relation",
       "formula")
   )
-  
+
   if (type == "text") stopifnot(property %in% valid_text_properties())
   if (type == "number") stopifnot(property %in% valid_number_properties())
   if (type == "checkbox") stopifnot(property %in% valid_checkbox_properties())
@@ -131,8 +133,8 @@ new_filter <- function(x = list(), type = "text", property = "equals") {
   if (type == "files") stopifnot(property %in% valid_files_properties())
   if (type == "relation") stopifnot(property %in% valid_relation_properties())
   if (type == "formula") stopifnot(property %in% valid_formula_properties())
-  
-  structure(x, 
+
+  structure(x,
             class = "notionr_filter",
             type = type,
             property = property)
@@ -147,7 +149,7 @@ new_sort <- function(x = list(), timestamp = "last_edited_time", direction = "de
   if (!direction %in% c("ascending", "descending")) {
     stop("direction must be 'ascending' or 'descending'", call. = FALSE)
   }
-  
+
   structure(x,
             class = "notionr_sort",
             timestamp = timestamp,
@@ -161,24 +163,24 @@ or <- function(x, y) {
 }
 
 #' Filter condition for database query
-#' 
+#'
 #' The `property_filter()` function applies a filter condition within a database
 #' query to limit which pages are returned.
-#' 
+#'
 #' The `property_filter()` applies to a particular database property, by name or
 #' id. It applies a user-supplied condition to this property to limit which
 #' pages are returned. For a full set of valid properties and property types,
 #' see the \href{https://developers.notion.com/reference/post-database-query#post-database-query-filter}{documentation here}.
 #' This filter is only meant for use within the \code{\link{query_database}}
 #' function.
-#' 
-#' @param property A character string; the name of the property to apply the 
+#'
+#' @param property A character string; the name of the property to apply the
 #'   filter to.
 #' @param type A character string; the property type as identified by Notion.
 #' @param body A two-sided formula. The left hand side specifies the filter
 #'   condition property - valid condition properties depend on the filter type -
 #'   and the right had side specifies the filtering value.
-#' @examples 
+#' @examples
 #' property_filter(
 #'   property = "Landmark",
 #'   type = "rich_text",
@@ -197,27 +199,27 @@ property_filter <- function(property, type, body) {
   fltr_formatted <- format(fltr, encode.as.character = encode.as.character)
   # Add property field
   fltr_formatted <- append(fltr_formatted,
-                           list("property" = property), 
+                           list("property" = property),
                            after = 0)
   return(fltr_formatted)
 }
 
 #' Sort condition for database query
-#' 
+#'
 #' The `property_sort()` function applies a sort condition within a database
 #' query to sort how pages are returned.
-#' 
-#' The `property_sort()` function applies to a particular database property, 
+#'
+#' The `property_sort()` function applies to a particular database property,
 #' by name or id. It applies a user-supplied condition to this property to sort
-#' pages are returned. This sort is only meant for use within the 
+#' pages are returned. This sort is only meant for use within the
 #' \code{\link{query_database}} function.
-#' 
-#' @param property A character string; the name of the property to apply the 
+#'
+#' @param property A character string; the name of the property to apply the
 #'   sort to.
 #' @param timestamp A character string; must be one of `last_edited_time` or
 #'   `created_time`.
 #' @param direction A character string; must be one of `descending` or `ascending`.
-#' @examples 
+#' @examples
 #' property_sort(
 #'   property = "Ingredients",
 #'   timestamp = "last_edited_time",
@@ -234,16 +236,16 @@ property_sort <- function(property, timestamp = "last_edited_time", direction = 
 }
 
 #' Construct body for database query
-#' 
-#' This function constructs the query body that is used to filter/sort the 
+#'
+#' This function constructs the query body that is used to filter/sort the
 #' results of the database query.
-#' 
+#'
 #' @param filter A property filter object.
 #' @param sorts A property sort or compound sort object.
 #' @seealso [property_filter()] and [property_sort()] to see how to properly
 #'   create property filters and sorts.
 #' @return The formatted query body.
-#' @export 
+#' @export
 query_body <- function(filter = NULL, sorts = NULL) {
   body_ls <- list()
   if (!is.null(filter)) {
@@ -267,10 +269,10 @@ reverse_code_types <- function(type) {
     "date"
   } else if (type %in% c("text",
                          "date",
-                         "people", 
-                         "files", 
+                         "people",
+                         "files",
                          "relation",
-                         "formula", 
+                         "formula",
                          "number",
                          "checkbox",
                          "select",
