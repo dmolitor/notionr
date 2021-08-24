@@ -11,14 +11,17 @@ devtools::install_github("dmolitor/notionr")
 - **notionr**
 
     To start the OAuth flow to verify to Notion that you would like the notionr integration to have access to your workspace:
-    ```r
+    
+    ``` r
     notion_auth()
     #> Waiting for authentication in browser...
     #> Press Esc/Ctrl + C to abort
     #> Authentication complete.
     #> Access credentials have been stored at ~/.R/notionr/oauth/workspace-name/notionr_oauth_access.json
     ```
+    
     Then, access the authorization token:
+    
     ```r
     key <- cached_access_code()
     key
