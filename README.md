@@ -35,4 +35,4 @@ devtools::install_github("dmolitor/notionr")
     
 - **Public Integration**
 
-    notionr is not yet set up to accomodate a pubic integration.
+    notionr is not yet set up to accomodate a public integration.
