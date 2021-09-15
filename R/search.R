@@ -19,18 +19,19 @@ new_search_sort <- function(timestamp, direction) {
 }
 
 #' Search for databases and pages
-#' 
+#'
 #' Search for databases and pages, using filters and sorts to limit which/how
 #' pages and databases are returned.
-#' 
+#'
 #' @param key Notion access key.
-#' @param query A string which limits which pages are returned by comparing the 
+#' @param query A string which limits which pages are returned by comparing the
 #'   query to the page title. If `NULL`, no limiting occurs.
 #' @param sort A search sort object. If `NULL`, no sorting will occur.
 #' @param filter A search filter object. If `NULL` no filtering will occur.
 #' @return A list of pages and/or databases.
-#' @seealso [search_filter()] and [search_sort()] to see details on how to 
+#' @seealso [search_filter()] and [search_sort()] to see details on how to
 #'   correctly construct filter and sort objects.
+#' @export
 search <- function(key, query = NULL, sort = NULL, filter = NULL) {
   stopifnot(nzchar(query) || is.null(query),
             inherits(sort, "notionr_search_sort") || is.null(sort),
@@ -48,7 +49,7 @@ search <- function(key, query = NULL, sort = NULL, filter = NULL) {
   }
   if (identical(body, list())) body <- NULL
   # Initialize empty list for pagination
-  content_ls <- recurse_cursors_post("https://api.notion.com/v1/search", 
+  content_ls <- recurse_cursors_post("https://api.notion.com/v1/search",
                                      key,
                                      body,
                                      cont.ls = NULL)
@@ -77,14 +78,14 @@ search <- function(key, query = NULL, sort = NULL, filter = NULL) {
 }
 
 #' Create a search filter
-#' 
+#'
 #' Construct a search filter to filter results returned from the \code{\link{search}}
 #' function. This filter is only meant for use within the \code{\link{search}}
 #' function.
-#' 
+#'
 #' @param value Which type of property to filter to. Currently, `"page"` and
 #' `"database"` are the only valid options.
-#' @param property Which property type to apply the filter to. Currently 
+#' @param property Which property type to apply the filter to. Currently
 #' `"object"` is the only valid option.
 #' @return A search filter object.
 #' @export
@@ -93,11 +94,11 @@ search_filter <- function(value = "page", property = "object") {
 }
 
 #' Create a search sort
-#' 
+#'
 #' Construct a search sort to sort results returned from the \code{\link{search}}
 #' function. This sort is only meant for use within the \code{\link{search}}
 #' function.
-#' 
+#'
 #' @param timestamp Which property to sort by. Currently, `"last_edited_time"`
 #'   is the only valid option.
 #' @param direction Which direction to sort in. Must be either `"descending"` or
