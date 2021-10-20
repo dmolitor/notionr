@@ -12,6 +12,14 @@ Get the development version from github with:
 # install.packages("devtools")
 devtools::install_github("dmolitor/notionr")
 ```
+
+## ⚠️ Warning ⚠️
+
+The Notion API is under rapid development and this package isn't. It currently covers ~75% of the API functionality,
+but none of the `PATCH` or `DELETE` methods have been implemented. Additionally, since the API is in beta, some changes
+in its functionality may break existing functionality in this package. However, this should provide a solid base of 
+functionality that can easily be extended and improved on.
+
 ## Setup
 - **notionr**
 
