@@ -51,7 +51,7 @@ auth_code <- function(id) {
 auth_url <- function(id, state) {
   stopifnot(is.character(id), is.character(state))
   sprintf(
-    "https://api.notion.com/v1/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code&state=%s",
+    "https://api.notion.com/v1/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code&state=%s&owner=user",
     id,
     utils::URLencode(httr::oauth_callback(),
                      reserved = TRUE),

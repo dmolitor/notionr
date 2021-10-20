@@ -1,13 +1,13 @@
 # Helper function for GETting all paginated Notion endpoints
 recurse_cursors_get <- function(endpoint, key, cursor = NULL, cont.ls) {
-  url <- httr::modify_url(url = endpoint, 
+  url <- httr::modify_url(url = endpoint,
                           query = list("start_cursor" = cursor))
   output <- httr::content(
     httr::stop_for_status(
       httr::GET(
         url = url,
         httr::add_headers("Authorization" = paste("Bearer", key),
-                          "Notion-Version" = "2021-05-13")
+                          "Notion-Version" = "2021-08-16")
       )
     )
   )
@@ -32,7 +32,7 @@ recurse_cursors_post <- function(url, key, query.body = NULL, cursor = NULL, con
         url = url,
         body = body,
         httr::add_headers("Authorization" = paste("Bearer", key),
-                          "Notion-Version" = "2021-05-13"),
+                          "Notion-Version" = "2021-08-16"),
         encode = "json"
       )
     )

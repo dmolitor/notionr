@@ -185,7 +185,7 @@ retrieve_page <- function(key, page.id) {
       httr::GET(
         url,
         httr::add_headers("Authorization" = paste("Bearer", key),
-                          "Notion-Version" = "2021-05-13")
+                          "Notion-Version" = "2021-08-16")
       )
     )
   )

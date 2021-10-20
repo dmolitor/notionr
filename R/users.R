@@ -70,7 +70,7 @@ retrieve_user <- function(key, user.id) {
     httr::stop_for_status(
       httr::GET(url = url,
                 httr::add_headers("Authorization" = paste("Bearer", key),
-                                  "Notion-Version" = "2021-05-13"))
+                                  "Notion-Version" = "2021-08-16"))
     )
   )
   new_user(cont)
