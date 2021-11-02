@@ -32,7 +32,7 @@ new_search_sort <- function(timestamp, direction) {
 #' @seealso [search_filter()] and [search_sort()] to see details on how to
 #'   correctly construct filter and sort objects.
 #' @export
-search <- function(key, query = NULL, sort = NULL, filter = NULL) {
+search_workspace <- function(key, query = NULL, sort = NULL, filter = NULL) {
   stopifnot(nzchar(query) || is.null(query),
             inherits(sort, "notionr_search_sort") || is.null(sort),
             inherits(filter, "notionr_search_filter") || is.null(filter))
@@ -79,8 +79,8 @@ search <- function(key, query = NULL, sort = NULL, filter = NULL) {
 
 #' Create a search filter
 #'
-#' Construct a search filter to filter results returned from the \code{\link{search}}
-#' function. This filter is only meant for use within the \code{\link{search}}
+#' Construct a search filter to filter results returned from the \code{\link{search_workspace}}
+#' function. This filter is only meant for use within the \code{\link{search_workspace}}
 #' function.
 #'
 #' @param value Which type of property to filter to. Currently, `"page"` and
@@ -95,8 +95,8 @@ search_filter <- function(value = "page", property = "object") {
 
 #' Create a search sort
 #'
-#' Construct a search sort to sort results returned from the \code{\link{search}}
-#' function. This sort is only meant for use within the \code{\link{search}}
+#' Construct a search sort to sort results returned from the \code{\link{search_workspace}}
+#' function. This sort is only meant for use within the \code{\link{search_workspace}}
 #' function.
 #'
 #' @param timestamp Which property to sort by. Currently, `"last_edited_time"`

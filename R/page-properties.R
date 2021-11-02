@@ -32,6 +32,7 @@ classify_page_property <- function(x) {
       "last_edited_time",
       "last_edited_by")
   )
+  x[[type]] <- wrap_null(x[[type]])
   if (type == "rich_text") {
     x[[type]] <- new_rich_text_array(x[[type]])
   } else if (type == "title") {

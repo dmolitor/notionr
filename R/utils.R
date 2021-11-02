@@ -74,3 +74,9 @@ replace_null_zchar <- function(x) {
   if (is.null(x)) return("")
   x
 }
+
+# Wrap NULLs in a list
+wrap_null <- function(x) {
+  if(!is.null(x)) return(x)
+  list(x)
+}

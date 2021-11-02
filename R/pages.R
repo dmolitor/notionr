@@ -43,7 +43,7 @@ id.notionr_page <- function(x) {
 #' List all Pages
 #'
 #' Return a list of all page objects. Allows the user to apply a query
-#' filter or sort direction, as seen in the \code{\link{search}} function, to
+#' filter or sort direction, as seen in the \code{\link{search_workspace}} function, to
 #' alter how/which objects are returned.
 #'
 #' @param key Notion access key as a character.
@@ -51,14 +51,14 @@ id.notionr_page <- function(x) {
 #'   query to the page title. If `NULL`, no limiting occurs.
 #' @param sort A search sort object. If `NULL`, no sorting will occur.
 #' @return A list of database objects.
-#' @seealso [search()] for examples of sorts.
+#' @seealso [search_workspace()] for examples of sorts.
 #' @export
 list_pages <- function(key, query = NULL, sort = NULL) {
   stopifnot(is.character(key))
-  search(key,
-         query = query,
-         sort = sort,
-         filter = search_filter())
+  search_workspace(key,
+                   query = query,
+                   sort = sort,
+                   filter = search_filter())
 }
 
 #' Retrieve all page names and IDs
@@ -71,7 +71,7 @@ list_pages <- function(key, query = NULL, sort = NULL) {
 #' @param query A string which limits which pages are returned by comparing the
 #'   query to the page title. If `NULL`, no limiting occurs.
 #' @param sort A search sort object. If `NULL`, no sorting will occur.
-#' @seealso [search()] and [list_pages()]
+#' @seealso [search_workspace()] and [list_pages()]
 #' @return A data.frame containing page names and IDs.
 #' @export
 list_page_ids <- function(key, query = NULL, sort = NULL) {

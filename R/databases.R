@@ -71,7 +71,7 @@ id.notionr_db <- function(x) {
 #' List all Databases
 #'
 #' Return a list of all database objects. Allows the user to apply a query
-#' filter or sort direction, as seen in the \code{\link{search}} function, to
+#' filter or sort direction, as seen in the \code{\link{search_workspace}} function, to
 #' alter how/which objects are returned.
 #'
 #' @param key Notion access key as a character.
@@ -79,14 +79,14 @@ id.notionr_db <- function(x) {
 #'   the query to the page title. If `NULL`, no limiting occurs.
 #' @param sort A search sort object. If `NULL`, no sorting will occur.
 #' @return A list of database objects.
-#' @seealso [search()] for examples of sorts.
+#' @seealso [search_workspace()] for examples of sorts.
 #' @export
 list_databases <- function(key, query = NULL, sort = NULL) {
   stopifnot(is.character(key))
-  search(key,
-         query = query,
-         sort = sort,
-         filter = search_filter(value = "database"))
+  search_workspace(key,
+                   query = query,
+                   sort = sort,
+                   filter = search_filter(value = "database"))
 }
 
 #' Retrieve all database names and IDs
@@ -99,7 +99,7 @@ list_databases <- function(key, query = NULL, sort = NULL) {
 #' @param query A string which limits which pages are returned by comparing the
 #'   query to the page title. If `NULL`, no limiting occurs.
 #' @param sort A search sort object. If `NULL`, no sorting will occur.
-#' @seealso [search()] and [list_databases()]
+#' @seealso [search_workspace()] and [list_databases()]
 #' @return A data.frame containing database names and IDs.
 #' @export
 list_database_ids <- function(key, query = NULL, sort = NULL) {
