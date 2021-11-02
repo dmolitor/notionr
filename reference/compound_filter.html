@@ -147,41 +147,42 @@ within the <code><a href='query_database.html'>query_database</a></code> functio
 checking for this, so it's on the user to adhere to it.</p>
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='fu'>compound_filter</span><span class='op'>(</span>
-  x <span class='op'>=</span> <span class='fu'><a href='property_filter.html'>property_filter</a></span><span class='op'>(</span>
-    property <span class='op'>=</span> <span class='st'>"Landmark"</span>,
-    type <span class='op'>=</span> <span class='st'>"text"</span>,
-    body <span class='op'>=</span> <span class='va'>contains</span> <span class='op'>~</span> <span class='va'>Bridge</span>
-  <span class='op'>)</span>,
-  y <span class='op'>=</span> <span class='fu'><a href='property_filter.html'>property_filter</a></span><span class='op'>(</span>
-    property <span class='op'>=</span> <span class='st'>"Bodies of Water"</span>,
-    type <span class='op'>=</span> <span class='st'>"checkbox"</span>,
-    body <span class='op'>=</span> <span class='va'>equals</span> <span class='op'>~</span> <span class='cn'>TRUE</span>
-  <span class='op'>)</span>,
-  type <span class='op'>=</span> <span class='st'>"and"</span>
-<span class='op'>)</span>
-</div><div class='output co'>#&gt; $and
-#&gt; $and[[1]]
-#&gt; $and[[1]]$property
-#&gt; [1] "Landmark"
-#&gt; 
-#&gt; $and[[1]]$text
-#&gt; $and[[1]]$text$contains
-#&gt; [1] "Bridge"
-#&gt; 
-#&gt; 
-#&gt; 
-#&gt; $and[[2]]
-#&gt; $and[[2]]$property
-#&gt; [1] "Bodies of Water"
-#&gt; 
-#&gt; $and[[2]]$checkbox
-#&gt; $and[[2]]$checkbox$equals
-#&gt; [1] TRUE
-#&gt; 
-#&gt; 
-#&gt; 
-#&gt; </div></pre>
+    <pre class="examples"><span class='r-in'><span class='fu'>compound_filter</span><span class='op'>(</span></span>
+<span class='r-in'>  x <span class='op'>=</span> <span class='fu'><a href='property_filter.html'>property_filter</a></span><span class='op'>(</span></span>
+<span class='r-in'>    property <span class='op'>=</span> <span class='st'>"Landmark"</span>,</span>
+<span class='r-in'>    type <span class='op'>=</span> <span class='st'>"text"</span>,</span>
+<span class='r-in'>    body <span class='op'>=</span> <span class='va'>contains</span> <span class='op'>~</span> <span class='va'>Bridge</span></span>
+<span class='r-in'>  <span class='op'>)</span>,</span>
+<span class='r-in'>  y <span class='op'>=</span> <span class='fu'><a href='property_filter.html'>property_filter</a></span><span class='op'>(</span></span>
+<span class='r-in'>    property <span class='op'>=</span> <span class='st'>"Bodies of Water"</span>,</span>
+<span class='r-in'>    type <span class='op'>=</span> <span class='st'>"checkbox"</span>,</span>
+<span class='r-in'>    body <span class='op'>=</span> <span class='va'>equals</span> <span class='op'>~</span> <span class='cn'>TRUE</span></span>
+<span class='r-in'>  <span class='op'>)</span>,</span>
+<span class='r-in'>  type <span class='op'>=</span> <span class='st'>"and"</span></span>
+<span class='r-in'><span class='op'>)</span></span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> $and</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> $and[[1]]</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> $and[[1]]$property</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] "Landmark"</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> $and[[1]]$text</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> $and[[1]]$text$contains</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] "Bridge"</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> $and[[2]]</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> $and[[2]]$property</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] "Bodies of Water"</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> $and[[2]]$checkbox</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> $and[[2]]$checkbox$equals</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] TRUE</span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
+</pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">

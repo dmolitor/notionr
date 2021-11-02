@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Compound database sort — compound_sort • notionr</title>
+<title>Search for databases and pages — search_workspace • notionr</title>
 
 
 <!-- jquery -->
@@ -39,11 +39,9 @@
 
 
 
-<meta property="og:title" content="Compound database sort — compound_sort" />
-<meta property="og:description" content="The compound_sort function combines a list of sorts into a compound one.
-Each element in this list should be an output of property_sort.
-This function is only meant for use
-within the query_database function." />
+<meta property="og:title" content="Search for databases and pages — search_workspace" />
+<meta property="og:description" content="Search for databases and pages, using filters and sorts to limit which/how
+pages and databases are returned." />
 
 
 
@@ -106,71 +104,48 @@ within the query_database function." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Compound database sort</h1>
+    <h1>Search for databases and pages</h1>
     
-    <div class="hidden name"><code>compound_sort.Rd</code></div>
+    <div class="hidden name"><code>search_workspace.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>The <code>compound_sort</code> function combines a list of sorts into a compound one.
-Each element in this list should be an output of <code><a href='property_sort.html'>property_sort</a></code>.
-This function is only meant for use
-within the <code><a href='query_database.html'>query_database</a></code> function.</p>
+    <p>Search for databases and pages, using filters and sorts to limit which/how
+pages and databases are returned.</p>
     </div>
 
-    <pre class="usage"><span class='fu'>compound_sort</span><span class='op'>(</span><span class='va'>...</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>search_workspace</span><span class='op'>(</span><span class='va'>key</span>, query <span class='op'>=</span> <span class='cn'>NULL</span>, sort <span class='op'>=</span> <span class='cn'>NULL</span>, filter <span class='op'>=</span> <span class='cn'>NULL</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>...</th>
-      <td><p>A list of property sorts.</p></td>
+      <th>key</th>
+      <td><p>Notion access key.</p></td>
+    </tr>
+    <tr>
+      <th>query</th>
+      <td><p>A string which limits which pages are returned by comparing the
+query to the page title. If <code>NULL</code>, no limiting occurs.</p></td>
+    </tr>
+    <tr>
+      <th>sort</th>
+      <td><p>A search sort object. If <code>NULL</code>, no sorting will occur.</p></td>
+    </tr>
+    <tr>
+      <th>filter</th>
+      <td><p>A search filter object. If <code>NULL</code> no filtering will occur.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>An object of class <code>notionr_compund_sort</code>.</p>
+    <p>A list of pages and/or databases.</p>
+    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><span class='r-in'><span class='fu'>compound_sort</span><span class='op'>(</span></span>
-<span class='r-in'>  <span class='fu'><a href='property_sort.html'>property_sort</a></span><span class='op'>(</span></span>
-<span class='r-in'>    property <span class='op'>=</span> <span class='st'>"Ingredients"</span>,</span>
-<span class='r-in'>    timestamp <span class='op'>=</span> <span class='st'>"last_edited_time"</span>,</span>
-<span class='r-in'>    direction <span class='op'>=</span> <span class='st'>"descending"</span></span>
-<span class='r-in'>  <span class='op'>)</span>,</span>
-<span class='r-in'>  <span class='fu'><a href='property_sort.html'>property_sort</a></span><span class='op'>(</span></span>
-<span class='r-in'>    property <span class='op'>=</span> <span class='st'>"Travel Destinations"</span>,</span>
-<span class='r-in'>    timestamp <span class='op'>=</span> <span class='st'>"created_time"</span>,</span>
-<span class='r-in'>    direction <span class='op'>=</span> <span class='st'>"ascending"</span></span>
-<span class='r-in'>  <span class='op'>)</span></span>
-<span class='r-in'><span class='op'>)</span></span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [[1]]</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [[1]]$property</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] "Ingredients"</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [[1]]$timestamp</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] "last_edited_time"</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [[1]]$direction</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] "descending"</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [[2]]</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [[2]]$property</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] "Travel Destinations"</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [[2]]$timestamp</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] "created_time"</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [[2]]$direction</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] "ascending"</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> </span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> attr(,"class")</span>
-<span class='r-out co'><span class='r-pr'>#&gt;</span> [1] "list"                  "notionr_compound_sort"</span>
-</pre>
+    <div class='dont-index'><p><code><a href='search_filter.html'>search_filter()</a></code> and <code><a href='search_sort.html'>search_sort()</a></code> to see details on how to
+correctly construct filter and sort objects.</p></div>
+
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
