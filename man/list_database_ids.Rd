@@ -23,5 +23,5 @@ useful for getting a quick overview of all databases and selecting a
 specific ID to access an individual database.
 }
 \seealso{
-\code{\link[=search]{search()}} and \code{\link[=list_databases]{list_databases()}}
+\code{\link[=search_workspace]{search_workspace()}} and \code{\link[=list_databases]{list_databases()}}
 }

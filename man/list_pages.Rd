@@ -19,9 +19,9 @@ A list of database objects.
 }
 \description{
 Return a list of all page objects. Allows the user to apply a query
-filter or sort direction, as seen in the \code{\link{search}} function, to
+filter or sort direction, as seen in the \code{\link{search_workspace}} function, to
 alter how/which objects are returned.
 }
 \seealso{
-\code{\link[=search]{search()}} for examples of sorts.
+\code{\link[=search_workspace]{search_workspace()}} for examples of sorts.
 }

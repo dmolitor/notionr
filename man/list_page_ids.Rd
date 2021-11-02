@@ -23,5 +23,5 @@ useful for getting a quick overview of all pages and selecting a
 specific ID to access an individual page.
 }
 \seealso{
-\code{\link[=search]{search()}} and \code{\link[=list_pages]{list_pages()}}
+\code{\link[=search_workspace]{search_workspace()}} and \code{\link[=list_pages]{list_pages()}}
 }

@@ -17,7 +17,7 @@ search_filter(value = "page", property = "object")
 A search filter object.
 }
 \description{
-Construct a search filter to filter results returned from the \code{\link{search}}
-function. This filter is only meant for use within the \code{\link{search}}
+Construct a search filter to filter results returned from the \code{\link{search_workspace}}
+function. This filter is only meant for use within the \code{\link{search_workspace}}
 function.
 }
